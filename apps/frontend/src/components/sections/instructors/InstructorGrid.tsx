@@ -12,10 +12,10 @@ export function InstructorGrid({ instructors }: InstructorGridProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn direction="up" className="text-center mb-12">
           <p className="text-sky-500 text-sm font-semibold uppercase tracking-widest mb-2">
-            Doi ngu chuyen gia
+            Đội Ngủ Chuyên Gia
           </p>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-            Giang vien cua AIZEN
+            Giảng Viên Của AIZEN
           </h2>
         </FadeIn>
 

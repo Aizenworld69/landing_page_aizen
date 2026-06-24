@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { FadeIn, StaggerChildren } from '@/components/ui/AnimationWrapper';
@@ -17,17 +17,17 @@ export function CompletedCoursesPreviewSection({ courses }: CompletedCoursesPrev
         {/* Header */}
         <FadeIn direction="up" className="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
           <div>
-            <p className="text-sky-500 text-xs font-bold uppercase tracking-widest mb-2">Thu vien</p>
+            <p className="text-sky-500 text-xs font-bold uppercase tracking-widest mb-2">Thư viện</p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">
-              Thu Vien Khoa Hoc Da Hoan Thanh
+              Thư Viện Khóa Học Đã Hoàn Thành
             </h2>
             <p className="text-gray-500 text-sm max-w-lg">
-              Xem lai chuong trinh giang day, truy cap tai lieu va xem lai noi dung tom tat.
+              Xem lại chương trình giảng dạy, truy cập tài liệu và xem lại nội dung tóm tắt.
             </p>
           </div>
           <Link href="/courses?status=completed">
             <Button size="sm" className="self-start md:self-auto bg-sky-500 hover:bg-sky-600 text-white border-0 rounded-full px-6 py-2.5 font-semibold text-sm whitespace-nowrap hover:scale-105 transition-transform">
-              Xem cac khoa da dien ra →
+              Xem các khóa đã diễn ra →
             </Button>
           </Link>
         </FadeIn>
@@ -56,11 +56,11 @@ export function CompletedCoursesPreviewSection({ courses }: CompletedCoursesPrev
                   )}
                   <div className="relative p-6">
                     <span className="inline-block px-3 py-1 bg-green-500/20 text-green-300 text-xs font-semibold rounded-full border border-green-500/30">
-                      Da hoan thanh
+                      Đã hoàn thành
                     </span>
                     {mainCourse.start_date && (
                       <span className="ml-3 text-xs text-gray-300">
-                        Thang {new Date(mainCourse.start_date).getMonth() + 1},{' '}
+                        Tháng {new Date(mainCourse.start_date).getMonth() + 1},{' '}
                         {new Date(mainCourse.start_date).getFullYear()}
                       </span>
                     )}
@@ -75,7 +75,7 @@ export function CompletedCoursesPreviewSection({ courses }: CompletedCoursesPrev
                     <div className="flex gap-3">
                       <Link href={`/courses/${mainCourse.slug}`}>
                         <Button size="sm" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20 text-xs px-4 py-2 hover:scale-105 transition-transform">
-                          ⊙ Xem tom tat
+                          ⊙ Xem tóm tắt
                         </Button>
                       </Link>
                     </div>
@@ -106,7 +106,7 @@ export function CompletedCoursesPreviewSection({ courses }: CompletedCoursesPrev
                   <div className="relative p-4 flex flex-col h-full justify-between">
                     <div>
                       <span className="inline-block px-2.5 py-0.5 bg-green-500/20 text-green-300 text-xs font-semibold rounded-full border border-green-500/30 mb-3">
-                        Da hoan thanh
+                        Đã hoàn thành
                       </span>
                       <h3 className="text-base font-bold text-white leading-snug mb-2 group-hover:text-sky-300 transition-colors">
                         {course.title}
@@ -116,7 +116,7 @@ export function CompletedCoursesPreviewSection({ courses }: CompletedCoursesPrev
                       </p>
                     </div>
                     <Link href={`/courses/${course.slug}`} className="inline-flex items-center gap-1 text-sky-300 text-xs font-medium hover:text-sky-200 transition-colors mt-3 group/link">
-                      Xem tom tat
+                      Xem tóm tắt
                       <span className="group-hover/link:translate-x-1 transition-transform inline-block">→</span>
                     </Link>
                   </div>
@@ -128,7 +128,7 @@ export function CompletedCoursesPreviewSection({ courses }: CompletedCoursesPrev
           <FadeIn>
             <div className="text-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-200">
               <p className="text-4xl mb-3 animate-float inline-block">📚</p>
-              <p>Chua co khoa hoc nao hoan thanh.</p>
+              <p>Chưa có khóa học nào hoàn thành.</p>
             </div>
           </FadeIn>
         )}
