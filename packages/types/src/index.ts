@@ -1,0 +1,92 @@
+﻿export type CourseStatus = 'upcoming' | 'completed';
+export type PlanType = 'individual' | 'group';
+export type EnrollmentStatus = 'upcoming' | 'completed';
+
+export interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  thumbnail_url: string | null;
+  status: CourseStatus;
+  category: string;
+  start_date: string | null;
+  price: number;
+  price_group: number;
+  instructor_id: string;
+  created_at: string;
+}
+
+export interface CourseModule {
+  id: string;
+  course_id: string;
+  title: string;
+  duration_minutes: number;
+  order_index: number;
+}
+
+export interface CourseWithDetails extends Course {
+  course_modules: CourseModule[];
+  instructors: Pick<Instructor, 'id' | 'name' | 'title' | 'avatar_url'> | null;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export interface Instructor {
+  id: string;
+  name: string;
+  title: string;
+  bio: string;
+  avatar_url: string | null;
+  social_links: Record<string, string>;
+  created_at: string;
+}
+
+export interface Profile {
+  id: string;
+  full_name: string;
+  phone: string | null;
+  email: string | null;
+  company: string | null;
+  avatar_url: string | null;
+  created_at: string;
+}
+
+export interface Enrollment {
+  id: string;
+  user_id: string;
+  course_id: string;
+  status: EnrollmentStatus;
+  completed_at: string | null;
+  created_at: string;
+  courses: Pick<Course, 'id' | 'title' | 'slug' | 'thumbnail_url' | 'status' | 'start_date' | 'category'> | null;
+}
+
+export interface Review {
+  id: string;
+  user_id: string;
+  course_id: string;
+  rating: number;
+  content: string;
+  created_at: string;
+  profiles: Pick<Profile, 'full_name' | 'avatar_url'> | null;
+}
+
+export interface Registration {
+  id: string;
+  course_id: string;
+  full_name: string;
+  phone: string;
+  email: string;
+  company: string | null;
+  plan: PlanType;
+  created_at: string;
+}
