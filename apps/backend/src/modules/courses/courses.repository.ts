@@ -1,4 +1,4 @@
-﻿import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_CLIENT } from '../../database/supabase.module';
 import type { QueryCourseDto } from './dto/query-course.dto';
@@ -43,7 +43,7 @@ export class CoursesRepository {
       .select(`
         *,
         course_modules (id, title, duration_minutes, order_index),
-        instructors (id, name, title, avatar_url)
+        instructors (id, name, title, avatar_url, bio)
       `)
       .eq('slug', slug)
       .single();

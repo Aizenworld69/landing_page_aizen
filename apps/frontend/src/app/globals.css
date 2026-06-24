@@ -23,3 +23,117 @@
     text-wrap: balance;
   }
 }
+
+/* ===================== ANIMATIONS ===================== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 0.7; transform: scale(1.08); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-float        { animation: float 4s ease-in-out infinite; }
+.animate-pulse-glow   { animation: pulse-glow 3s ease-in-out infinite; }
+.animate-slide-up     { animation: slide-up 0.7s ease-out both; }
+.animate-fade-in      { animation: fade-in 0.6s ease-out both; }
+.animate-scale-in     { animation: scale-in 0.5s ease-out both; }
+.animate-spin-slow    { animation: spin-slow 12s linear infinite; }
+
+.delay-100  { animation-delay: 100ms; }
+.delay-200  { animation-delay: 200ms; }
+.delay-300  { animation-delay: 300ms; }
+.delay-400  { animation-delay: 400ms; }
+.delay-500  { animation-delay: 500ms; }
+.delay-600  { animation-delay: 600ms; }
+.delay-700  { animation-delay: 700ms; }
+
+/* Shimmer text */
+.text-shimmer {
+  background: linear-gradient(90deg, #0EA5E9 0%, #38bdf8 40%, #7dd3fc 60%, #0EA5E9 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px -12px rgba(14, 165, 233, 0.18);
+}
+/* Hero title glow effect — giu mau sky-500, them do bong */
+.hero-text-glow {
+  color: #0EA5E9;
+  text-shadow:
+    0 0 30px rgba(14, 165, 233, 0.35),
+    0 0 60px rgba(14, 165, 233, 0.15),
+    0 4px 16px rgba(14, 165, 233, 0.2);
+  position: relative;
+  display: inline-block;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.hero-text-glow::after {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -4px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #0EA5E9, #38bdf8, #0EA5E9, transparent);
+  border-radius: 99px;
+  opacity: 0.7;
+  animation: underline-slide 3s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    text-shadow:
+      0 0 30px rgba(14, 165, 233, 0.35),
+      0 0 60px rgba(14, 165, 233, 0.15),
+      0 4px 16px rgba(14, 165, 233, 0.2);
+  }
+  50% {
+    text-shadow:
+      0 0 40px rgba(14, 165, 233, 0.55),
+      0 0 80px rgba(14, 165, 233, 0.25),
+      0 4px 24px rgba(14, 165, 233, 0.35);
+  }
+}
+
+@keyframes underline-slide {
+  0%, 100% { opacity: 0.5; transform: scaleX(0.8); }
+  50%       { opacity: 0.9; transform: scaleX(1); }
+}

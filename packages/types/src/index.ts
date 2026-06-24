@@ -1,4 +1,4 @@
-﻿export type CourseStatus = 'upcoming' | 'completed';
+export type CourseStatus = 'upcoming' | 'completed';
 export type PlanType = 'individual' | 'group';
 export type EnrollmentStatus = 'upcoming' | 'completed';
 
@@ -14,6 +14,8 @@ export interface Course {
   price: number;
   price_group: number;
   instructor_id: string;
+  skills?: { title: string; description: string; badge?: string }[];
+  curriculum_headline?: string | null;
   created_at: string;
 }
 
@@ -27,7 +29,7 @@ export interface CourseModule {
 
 export interface CourseWithDetails extends Course {
   course_modules: CourseModule[];
-  instructors: Pick<Instructor, 'id' | 'name' | 'title' | 'avatar_url'> | null;
+  instructors: Pick<Instructor, 'id' | 'name' | 'title' | 'avatar_url' | 'bio'> | null;
 }
 
 export interface PaginatedResponse<T> {

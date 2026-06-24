@@ -8,18 +8,15 @@
   ParseUUIDPipe,
   Post,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser, type JwtPayload } from '../../common/decorators/current-user.decorator';
-import { ResponseTransformInterceptor } from '../../common/interceptors/response-transform.interceptor';
 
 @ApiTags('Reviews')
 @Controller('reviews')
-@UseInterceptors(ResponseTransformInterceptor)
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 

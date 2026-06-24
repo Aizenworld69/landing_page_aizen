@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
-import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { CourseHero } from '@/components/sections/course-detail/CourseHero';
 import { CourseSkills } from '@/components/sections/course-detail/CourseSkills';
 import { CourseCurriculum } from '@/components/sections/course-detail/CourseCurriculum';
@@ -28,9 +27,10 @@ async function getCourse(slug: string): Promise<CourseWithDetails | null> {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const course = await getCourse(params.slug);
+  const { slug } = await params;
+  const course = await getCourse(slug);
   if (!course) return { title: 'Không tìm thấy khóa học' };
   return {
     title: course.title,
@@ -42,43 +42,34 @@ export async function generateMetadata({
 export default async function CourseDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const course = await getCourse(params.slug);
+  const { slug } = await params;
+  const course = await getCourse(slug);
   if (!course) notFound();
 
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[#F8FAFC]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Breadcrumb
-            items={[
-              { label: 'Trang chủ', href: '/' },
-              { label: 'Khóa học', href: '/courses' },
-              { label: course.title },
-            ]}
-          />
-
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left — course detail */}
+      <main className="min-h-screen bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            {/* Left — course content */}
             <div className="lg:col-span-2">
               <CourseHero course={course} />
               <CourseSkills />
               <CourseCurriculum modules={course.course_modules} />
-
-              {/* Instructor section */}
               {course.instructors && (
                 <InstructorCard
                   instructor={{
                     ...course.instructors,
-                    bio: '',
+                    bio: course.instructors.bio ?? '',
                   }}
                 />
               )}
             </div>
 
-            {/* Right — registration form */}
+            {/* Right — sticky registration form */}
             <div className="lg:col-span-1">
               <RegistrationForm
                 courseId={course.id}
@@ -89,20 +80,6 @@ export default async function CourseDetailPage({
           </div>
         </div>
       </main>
-
-      {/* Zalo float button */}
-      <a
-        href="https://zalo.me/aizen"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#0068ff] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
-        aria-label="Chat Zalo"
-      >
-        <svg viewBox="0 0 48 48" className="w-8 h-8" fill="white">
-          <path d="M24 4C13 4 4 12 4 22c0 5.5 2.8 10.5 7.3 14L10 40l7-2.5A20.7 20.7 0 0024 40c11 0 20-8 20-18S35 4 24 4z" />
-        </svg>
-      </a>
-
       <Footer />
     </>
   );

@@ -5,16 +5,19 @@ import { UpcomingCoursesSection } from '@/components/sections/home/UpcomingCours
 import { CompletedCoursesPreviewSection } from '@/components/sections/home/CompletedCoursesPreviewSection';
 import type { Course, PaginatedResponse } from '@aizen/types';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+
 async function getUpcomingCourses(): Promise<Course[]> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/courses?status=upcoming&limit=3`,
-      { next: { revalidate: 300 } }, // revalidate every 5 min
+      `${API_URL}/courses?status=upcoming&limit=3`,
+      { cache: 'no-store' },
     );
     if (!res.ok) return [];
     const json = (await res.json()) as { data: PaginatedResponse<Course> };
-    return json.data.items;
-  } catch {
+    return json.data?.items ?? [];
+  } catch (e) {
+    console.error('[getUpcomingCourses]', e);
     return [];
   }
 }
@@ -22,13 +25,14 @@ async function getUpcomingCourses(): Promise<Course[]> {
 async function getCompletedCourses(): Promise<Course[]> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/courses?status=completed&limit=3`,
-      { next: { revalidate: 300 } },
+      `${API_URL}/courses?status=completed&limit=3`,
+      { cache: 'no-store' },
     );
     if (!res.ok) return [];
     const json = (await res.json()) as { data: PaginatedResponse<Course> };
-    return json.data.items;
-  } catch {
+    return json.data?.items ?? [];
+  } catch (e) {
+    console.error('[getCompletedCourses]', e);
     return [];
   }
 }

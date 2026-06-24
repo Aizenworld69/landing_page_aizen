@@ -1,12 +1,10 @@
-﻿import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
+﻿import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CoursesService } from './courses.service';
 import { QueryCourseDto } from './dto/query-course.dto';
-import { ResponseTransformInterceptor } from '../../common/interceptors/response-transform.interceptor';
 
 @ApiTags('Courses')
 @Controller('courses')
-@UseInterceptors(ResponseTransformInterceptor)
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 

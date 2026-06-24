@@ -1,4 +1,5 @@
-import Image from 'next/image';
+﻿import Image from 'next/image';
+import { FadeIn, StaggerChildren } from '@/components/ui/AnimationWrapper';
 import type { Instructor } from '@aizen/types';
 
 interface InstructorGridProps {
@@ -9,40 +10,41 @@ export function InstructorGrid({ instructors }: InstructorGridProps) {
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <p className="text-primary-500 text-sm font-semibold uppercase tracking-widest mb-2">
-            Đội ngũ chuyên gia
+        <FadeIn direction="up" className="text-center mb-12">
+          <p className="text-sky-500 text-sm font-semibold uppercase tracking-widest mb-2">
+            Doi ngu chuyen gia
           </p>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-            Giảng viên của AIZEN
+            Giang vien cua AIZEN
           </h2>
-        </div>
+        </FadeIn>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" stagger={130}>
           {instructors.map((instructor) => (
             <div
               key={instructor.id}
-              className="bg-[#F8FAFC] border border-gray-100 rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-md transition-shadow"
+              className="card-hover bg-[#F8FAFC] border border-gray-100 rounded-2xl p-6 flex flex-col items-center text-center group"
             >
               {/* Avatar */}
-              <div className="mb-4">
+              <div className="mb-4 relative">
+                <div className="absolute inset-0 rounded-full bg-sky-200/50 scale-0 group-hover:scale-110 transition-transform duration-500 blur-md" />
                 {instructor.avatar_url ? (
                   <Image
                     src={instructor.avatar_url}
                     alt={instructor.name}
                     width={96}
                     height={96}
-                    className="rounded-full object-cover border-4 border-white shadow"
+                    className="relative rounded-full object-cover border-4 border-white shadow group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center">
+                  <div className="relative w-24 h-24 rounded-full bg-sky-100 flex items-center justify-center border-4 border-white shadow group-hover:scale-105 transition-transform duration-300">
                     <span className="text-4xl">👤</span>
                   </div>
                 )}
               </div>
 
-              <h3 className="font-bold text-gray-900 text-lg">{instructor.name}</h3>
-              <span className="mt-1.5 inline-block px-3 py-1 bg-primary-50 text-primary-600 text-xs font-semibold rounded-full border border-primary-100">
+              <h3 className="font-bold text-gray-900 text-lg group-hover:text-sky-500 transition-colors">{instructor.name}</h3>
+              <span className="mt-1.5 inline-block px-3 py-1 bg-sky-50 text-sky-600 text-xs font-semibold rounded-full border border-sky-100">
                 {instructor.title}
               </span>
 
@@ -60,7 +62,7 @@ export function InstructorGrid({ instructors }: InstructorGridProps) {
                       href={instructor.social_links.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-primary-500 transition-colors"
+                      className="text-gray-400 hover:text-sky-500 transition-colors hover:scale-110 transform duration-200"
                       aria-label="LinkedIn"
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -71,7 +73,7 @@ export function InstructorGrid({ instructors }: InstructorGridProps) {
                   {instructor.social_links.email && (
                     <a
                       href={`mailto:${instructor.social_links.email}`}
-                      className="text-gray-400 hover:text-primary-500 transition-colors"
+                      className="text-gray-400 hover:text-sky-500 transition-colors hover:scale-110 transform duration-200"
                       aria-label="Email"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +85,7 @@ export function InstructorGrid({ instructors }: InstructorGridProps) {
               )}
             </div>
           ))}
-        </div>
+        </StaggerChildren>
       </div>
     </section>
   );

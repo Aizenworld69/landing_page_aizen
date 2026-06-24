@@ -8,8 +8,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "dev": "echo 'types ready'",
-    "build": "echo 'types ready'",
-    "lint": "echo 'types ready'"
+    "dev": "echo types_ready",
+    "build": "echo types_ready",
+    "lint": "echo types_ready"
   }
 }

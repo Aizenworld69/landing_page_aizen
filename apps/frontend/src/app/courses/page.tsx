@@ -1,4 +1,4 @@
-import { Navbar } from '@/components/common/Navbar';
+﻿import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { CourseCard } from '@/components/sections/courses/CourseCard';
@@ -31,11 +31,11 @@ async function fetchCourses(params: SearchParams): Promise<PaginatedResponse<Cou
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/courses?${query.toString()}`,
-      { next: { revalidate: 60 } },
+      { cache: 'no-store' },
     );
     if (!res.ok) throw new Error('Fetch failed');
     const json = (await res.json()) as { data: PaginatedResponse<Course> };
-    return json.data;
+    return json.data ?? [];
   } catch {
     return { items: [], pagination: { total: 0, page: 1, limit: 9, totalPages: 0 } };
   }

@@ -8,20 +8,17 @@
   ParseUUIDPipe,
   Post,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EnrollmentsService } from './enrollments.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser, type JwtPayload } from '../../common/decorators/current-user.decorator';
-import { ResponseTransformInterceptor } from '../../common/interceptors/response-transform.interceptor';
 
 @ApiTags('My Courses')
 @ApiBearerAuth()
 @Controller('my-courses')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(ResponseTransformInterceptor)
 export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) {}
 

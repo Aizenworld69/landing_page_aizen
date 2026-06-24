@@ -1,4 +1,4 @@
-﻿export type CourseStatus = 'upcoming' | 'completed';
+export type CourseStatus = 'upcoming' | 'completed';
 
 export interface Course {
   id: string;
@@ -12,6 +12,8 @@ export interface Course {
   price: number;
   price_group: number;
   instructor_id: string;
+  skills?: { title: string; description: string; badge?: string }[];
+  curriculum_headline?: string | null;
   created_at: string;
 }
 
@@ -30,5 +32,6 @@ export interface CourseWithDetails extends Course {
     name: string;
     title: string;
     avatar_url: string | null;
+    bio: string;
   } | null;
 }

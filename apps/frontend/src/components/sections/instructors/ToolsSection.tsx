@@ -18,16 +18,16 @@ const TOOLS = [
 
 export function ToolsSection() {
   return (
-    <section className="bg-[#0F172A] py-16">
+    <section className="bg-white py-16 border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <p className="text-primary-400 text-sm font-semibold uppercase tracking-widest mb-2">
+          <p className="text-sky-500 text-xs font-bold uppercase tracking-widest mb-2">
             Công cụ
           </p>
-          <h2 className="text-2xl md:text-3xl font-bold text-white">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900">
             Bộ công cụ làm chủ AI
           </h2>
-          <p className="text-gray-400 mt-3 max-w-xl mx-auto">
+          <p className="text-gray-500 mt-3 max-w-xl mx-auto text-sm leading-relaxed">
             Chúng tôi đào tạo bạn sử dụng thành thạo những công cụ AI hàng đầu thế giới.
           </p>
         </div>
@@ -36,11 +36,11 @@ export function ToolsSection() {
           {TOOLS.map((tool) => (
             <div
               key={tool.name}
-              className="bg-[#1E293B] border border-gray-700 rounded-2xl p-6 text-center hover:border-primary-500/50 transition-colors"
+              className="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center hover:border-sky-300 hover:shadow-sm transition-all"
             >
               <div className="text-5xl mb-4">{tool.logo}</div>
-              <h3 className="font-bold text-white text-lg mb-2">{tool.name}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">{tool.description}</p>
+              <h3 className="font-bold text-gray-900 text-lg mb-2">{tool.name}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">{tool.description}</p>
             </div>
           ))}
         </div>

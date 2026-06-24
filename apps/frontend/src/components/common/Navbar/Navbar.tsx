@@ -1,10 +1,10 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
-import { Button } from '@/components/ui/Button';
 
 const NAV_LINKS = [
   { href: '/courses', label: 'Khóa học' },
@@ -18,24 +18,32 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+    <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-primary-500 tracking-tight">AIZEN</span>
-            <span className="text-xl font-light text-gray-400 hidden sm:block">Education</span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="AIZEN Education"
+              width={120}
+              height={40}
+              className="object-contain h-9 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 className={cn(
-                  'text-sm font-medium transition-colors hover:text-primary-500',
-                  pathname.startsWith(href) ? 'text-primary-500' : 'text-gray-600',
+                  'text-sm font-medium transition-colors relative pb-1',
+                  pathname.startsWith(href)
+                    ? 'text-sky-500 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-sky-500 after:rounded-full'
+                    : 'text-gray-700 hover:text-sky-500',
                 )}
               >
                 {label}
@@ -43,13 +51,13 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* CTA */}
-          <div className="hidden md:flex items-center gap-3">
-            <Link href="/auth/login">
-              <Button variant="ghost" size="sm">Đăng nhập</Button>
-            </Link>
-            <Link href="/auth/register">
-              <Button size="sm">Đăng ký</Button>
+          {/* Login CTA */}
+          <div className="hidden md:flex items-center">
+            <Link
+              href="/auth/login"
+              className="text-sm font-bold text-sky-500 hover:text-sky-600 tracking-wide uppercase"
+            >
+              Đăng nhập
             </Link>
           </div>
 
@@ -80,21 +88,20 @@ export function Navbar() {
                   className={cn(
                     'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                     pathname.startsWith(href)
-                      ? 'bg-primary-50 text-primary-600'
-                      : 'text-gray-600 hover:bg-gray-50',
+                      ? 'bg-sky-50 text-sky-600'
+                      : 'text-gray-700 hover:bg-gray-50',
                   )}
                 >
                   {label}
                 </Link>
               ))}
-              <div className="flex gap-2 mt-3 px-3">
-                <Link href="/auth/login" className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full">Đăng nhập</Button>
-                </Link>
-                <Link href="/auth/register" className="flex-1">
-                  <Button size="sm" className="w-full">Đăng ký</Button>
-                </Link>
-              </div>
+              <Link
+                href="/auth/login"
+                onClick={() => setMobileOpen(false)}
+                className="px-3 py-2 text-sm font-bold text-sky-500 uppercase tracking-wide"
+              >
+                Đăng nhập
+              </Link>
             </nav>
           </div>
         )}
