@@ -1,10 +1,11 @@
-﻿import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 
 import appConfig from './config/app.config';
 import supabaseConfig from './config/supabase.config';
+import larkConfig from './config/lark.config';
 import { SupabaseModule } from './database/supabase.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
@@ -21,7 +22,7 @@ import { HealthController } from './health.controller';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, supabaseConfig],
+      load: [appConfig, supabaseConfig, larkConfig],
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
         PORT: Joi.number().default(3001),
@@ -30,6 +31,7 @@ import { HealthController } from './health.controller';
         SUPABASE_ANON_KEY: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
         FRONTEND_URL: Joi.string().default('http://localhost:3000'),
+        LARK_WEBHOOK_URL: Joi.string().uri().optional().allow(''),
       }),
     }),
     SupabaseModule,

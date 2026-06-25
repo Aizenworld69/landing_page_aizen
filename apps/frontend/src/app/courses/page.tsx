@@ -1,4 +1,5 @@
-﻿import { Navbar } from '@/components/common/Navbar';
+import { Suspense } from 'react';
+import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { CourseCard } from '@/components/sections/courses/CourseCard';
@@ -64,7 +65,13 @@ export default async function CoursesPage({
             <p className="text-gray-500 mt-1">{pagination.total} khoa hoc</p>
           </div>
 
-          <CourseFilters />
+          <Suspense fallback={<div className="flex flex-col sm:flex-row gap-3 animate-pulse">
+            <div className="flex-1 h-10 bg-gray-100 rounded-lg" />
+            <div className="w-44 h-10 bg-gray-100 rounded-lg" />
+            <div className="w-36 h-10 bg-gray-100 rounded-lg" />
+          </div>}>
+            <CourseFilters />
+          </Suspense>
 
           {items.length > 0 ? (
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

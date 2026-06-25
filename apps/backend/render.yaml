@@ -1,9 +1,10 @@
-﻿services:
+services:
   - type: web
     name: aizen-education-api
     env: node
     region: singapore
     plan: free
+    rootDir: apps/backend
     buildCommand: npm install && npm run build
     startCommand: node dist/main
     healthCheckPath: /api/health
@@ -21,4 +22,6 @@
       - key: JWT_SECRET
         sync: false
       - key: FRONTEND_URL
+        sync: false
+      - key: LARK_WEBHOOK_URL
         sync: false
