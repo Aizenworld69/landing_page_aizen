@@ -11,15 +11,12 @@ async function bootstrap() {
   // Security
   app.use(helmet());
 
-  // CORS — hỗ trợ cả localhost dev và Vercel production
-  const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    'http://localhost:3000',
-    /^https:\/\/.*\.vercel\.app$/,
-  ].filter(Boolean);
-
+  // CORS — hỗ trợ localhost dev và Vercel production
   app.enableCors({
-    origin: allowedOrigins,
+    origin: [
+      process.env.FRONTEND_URL ?? 'http://localhost:3000',
+      /^https:\/\/.*\.vercel\.app$/,
+    ] as (string | RegExp)[],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+﻿import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_CLIENT } from '../../database/supabase.module';
 import type { QueryCourseDto } from './dto/query-course.dto';
@@ -20,7 +20,7 @@ export class CoursesRepository {
     let builder = this.supabase
       .from('courses')
       .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
+      .order('start_date', { ascending: true })
       .range(offset, offset + limit - 1);
 
     if (status) builder = builder.eq('status', status);
@@ -42,10 +42,20 @@ export class CoursesRepository {
       .from('courses')
       .select(`
         *,
-        course_modules (id, title, duration_minutes, order_index),
+        course_modules (
+          id,
+          title,
+          subtitle,
+          description,
+          duration_minutes,
+          order_index,
+          start_time,
+          item_type
+        ),
         instructors (id, name, title, avatar_url, bio)
       `)
       .eq('slug', slug)
+      .order('order_index', { referencedTable: 'course_modules', ascending: true })
       .single();
 
     if (error) {

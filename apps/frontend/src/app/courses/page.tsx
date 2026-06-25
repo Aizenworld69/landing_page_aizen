@@ -32,7 +32,7 @@ async function fetchCourses(params: SearchParams): Promise<PaginatedResponse<Cou
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/courses?${query.toString()}`,
-      { cache: 'no-store' },
+      { next: { revalidate: 30 } },
     );
     if (!res.ok) throw new Error('Fetch failed');
     const json = (await res.json()) as { data: PaginatedResponse<Course> };
@@ -81,7 +81,7 @@ export default async function CoursesPage({
             </div>
           ) : (
             <div className="mt-16 text-center">
-              <p className="text-5xl mb-4">??</p>
+              <p className="text-5xl mb-4">📭</p>
               <p className="text-gray-500">Khong tim thay khoa hoc phu hop.</p>
             </div>
           )}

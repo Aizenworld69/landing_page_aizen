@@ -163,12 +163,122 @@ VALUES
 ('6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c', 'Xây dựng AI Agents với kiến trúc Multi-Agent', 'xay-dung-ai-agents-voi-kien-truc-multi-agent', 'Thiết kế và triển khai hệ thống đa tác tử (Multi-Agent), cho phép các AI làm việc cộng tác giải quyết vấn đề lớn mà một agent không làm được.', '/images/courses/multi_agent.png', 'completed', 'AI & Machine Learning', '2024-08-05', 1800000, 1500000, 'b1a2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', '[]', NULL),
 ('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Tối ưu hóa Prompt Engineering Nâng cao', 'toi-uu-hoa-prompt-engineering-nang-cao', 'Kỹ thuật tinh chỉnh câu lệnh để kiểm soát độ chính xác, phong cách và định dạng đầu ra của các LLM hàng đầu hiện nay.', '/images/courses/prompt_engineering.png', 'completed', 'Automation', '2024-06-06', 1400000, 1100000, 'b1a2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', '[]', NULL);
 
--- 3. Course Modules (For Claude AI Course)
-INSERT INTO public.course_modules (course_id, title, duration_minutes, order_index)
-VALUES 
-('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Đón khách & Khởi động', 30, 0),
-('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Module 1: Tư duy đúng về AI (Bộ 3: Mindset - Skillset - Toolset; Cấu trúc Prompt chuẩn)', 30, 1),
-('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Module 2: Bộ 4 công cụ cốt lõi của Claude (Skills - não bộ chuyên môn; Projects - bộ nhớ dài hạn)', 60, 2);
+-- 3. Course Modules (đầy đủ cho tất cả khóa học)
+-- Cần chạy migration 003 trước để có subtitle, description, start_time, item_type
+-- Nếu dùng seed.sql thuần, hãy chạy migration 004 và 005 riêng
+
+INSERT INTO public.course_modules (course_id, title, subtitle, duration_minutes, order_index, start_time, item_type)
+VALUES
+-- ── Khóa 1: Làm chủ Claude AI (9a8b7c6d) ──
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Check-in & Warming up', NULL, 30, 0, '08:00', 'event'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Module 1: Tư duy đúng về AI', 'Bộ 3: Mindset – Skillset – Toolset; Cấu trúc Prompt chuẩn', 30, 1, '08:30', 'module'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Module 2: Bộ 4 công cụ cốt lõi của Claude', 'Skills – não bộ chuyên môn; Projects – bộ nhớ dài hạn', 60, 2, '09:00', 'module'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Giải lao & Tea-break', NULL, 20, 3, '10:00', 'break'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Module 3: Bộ 4 công cụ cốt lõi của Claude (tiếp)', 'Connectors – cầu nối ra thế giới bên ngoài; Artifacts – xưởng sản xuất đầu ra', 60, 4, '10:20', 'module'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Module 4: Tạo Landing Page quảng cáo cùng Claude', NULL, 40, 5, '11:20', 'module'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Nghỉ trưa & Networking', NULL, 80, 6, '12:00', 'break'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Warming up', NULL, 10, 7, '13:20', 'event'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Module 5: Claude + Canva', 'Kết hợp AI sinh ảnh, thiết kế slide, banner không cần Photoshop', 90, 8, '13:30', 'module'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Module 6: Claude Cowork (phần 1)', 'Xây dựng phòng ban AI đa agent – phân vai, phân việc tự động', 30, 9, '15:00', 'module'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Giải lao & Tea-break', NULL, 15, 10, '15:30', 'break'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Module 6: Claude Cowork (phần 2)', 'Demo thực tế: tự động hóa pipeline bán hàng, CSKH bằng Multi-agent', 30, 11, '15:45', 'module'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Demo – Q&A', NULL, 45, 12, '16:15', 'event'),
+('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 'Kết thúc', NULL, 0, 13, '17:00', 'event'),
+
+-- ── Khóa 2: Kỹ thuật Prompt Nâng cao (e2f3a4b5) ──
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Check-in & Warming up', NULL, 30, 0, '08:00', 'event'),
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Module 1: Nền tảng Prompt Engineering', 'Anatomy of a prompt; Zero-shot, Few-shot, Chain-of-Thought', 60, 1, '08:30', 'module'),
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Module 2: Kỹ thuật điều khiển đầu ra', 'Structured output, JSON mode, Format control; Tránh hallucination', 60, 2, '09:30', 'module'),
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Giải lao & Tea-break', NULL, 20, 3, '10:30', 'break'),
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Module 3: System Prompt & Role Prompting', 'Persona design, Role-play có kiểm soát, Injecting context hiệu quả', 60, 4, '10:50', 'module'),
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Module 4: Prompt cho doanh nghiệp', 'Template library, Prompt version control, A/B testing prompt', 40, 5, '11:50', 'module'),
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Nghỉ trưa & Networking', NULL, 80, 6, '12:30', 'break'),
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Module 5: Prompt cho Sales & Marketing', 'Viết content đa kênh, Email sequence, Script bán hàng cá nhân hóa', 90, 7, '13:50', 'module'),
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Module 6: Thực hành & Case study thực tế', 'Nhóm thực hành 3 case: Marketing, CSKH, Báo cáo tự động', 60, 8, '15:20', 'module'),
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Giải lao & Tea-break', NULL, 15, 9, '16:20', 'break'),
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Demo – Q&A – Trao chứng nhận', NULL, 40, 10, '16:35', 'event'),
+('e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b', 'Kết thúc', NULL, 0, 11, '17:15', 'event'),
+
+-- ── Khóa 3: AI cho Chiến lược Doanh nghiệp (a1b2c3d4) ──
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Check-in & Warming up', NULL, 30, 0, '08:00', 'event'),
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Module 1: AI trong bức tranh chiến lược', 'Vì sao AI không chỉ là công cụ – AI như lợi thế cạnh tranh dài hạn', 60, 1, '08:30', 'module'),
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Module 2: Đánh giá & chọn ưu tiên ứng dụng AI', 'Ma trận Impact-Effort; Chọn 3 use case đầu tiên cho doanh nghiệp bạn', 60, 2, '09:30', 'module'),
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Giải lao & Tea-break', NULL, 20, 3, '10:30', 'break'),
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Module 3: Xây dựng lộ trình chuyển đổi AI', '3 giai đoạn: Thí điểm → Nhân rộng → Tối ưu; KPI đo lường thực tế', 60, 4, '10:50', 'module'),
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Module 4: Quản trị & rủi ro AI trong doanh nghiệp', 'Bảo mật dữ liệu, Bias, Governance framework thực tiễn', 40, 5, '11:50', 'module'),
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Nghỉ trưa & Workshop Thực hành', NULL, 90, 6, '12:30', 'break'),
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Module 5: Case study – AI trong Sales & Marketing', 'Tự động hóa lead scoring, content factory, personalization ở quy mô lớn', 90, 7, '14:00', 'module'),
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Module 6: Trình bày kế hoạch AI của bạn', 'Mỗi nhóm 5 phút pitch – nhận phản hồi từ chuyên gia', 60, 8, '15:30', 'module'),
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Giải lao & Tea-break', NULL, 15, 9, '16:30', 'break'),
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Q&A – Trao chứng nhận – Networking', NULL, 30, 10, '16:45', 'event'),
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Kết thúc', NULL, 0, 11, '17:15', 'event'),
+
+-- ── Khóa 4: Kiến trúc Tích hợp AI (f3a4b5c6) ──
+('f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c', 'Check-in & Warming up', NULL, 30, 0, '08:00', 'event'),
+('f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c', 'Module 1: Tổng quan kiến trúc hệ thống AI', 'Monolith vs Microservice AI; API Gateway, Rate limiting, Caching cho AI', 60, 1, '08:30', 'module'),
+('f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c', 'Module 2: Tích hợp LLM vào hệ thống hiện có', 'OpenAI / Claude API; Streaming, Retry logic, Error handling chuẩn production', 60, 2, '09:30', 'module'),
+('f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c', 'Giải lao & Tea-break', NULL, 20, 3, '10:30', 'break'),
+('f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c', 'Module 3: RAG – Retrieval Augmented Generation', 'Embedding, Vector DB (Pinecone/Supabase pgvector), Semantic search thực chiến', 90, 4, '10:50', 'module'),
+('f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c', 'Nghỉ trưa & Networking', NULL, 60, 5, '12:20', 'break'),
+('f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c', 'Module 4: Hệ thống Multi-Agent & Orchestration', 'LangGraph, AutoGen; Quản lý state, Tool calling, Human-in-the-loop', 90, 6, '13:20', 'module'),
+('f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c', 'Giải lao & Tea-break', NULL, 15, 7, '14:50', 'break'),
+('f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c', 'Module 5: Observability & Monitoring AI', 'Logging prompt/response, Latency tracking, Cost optimization thực tế', 60, 8, '15:05', 'module'),
+('f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c', 'Module 6: Deploy & CI/CD cho hệ thống AI', 'Docker, GitHub Actions, Blue-green deployment; Rollback an toàn', 60, 9, '16:05', 'module'),
+('f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c', 'Q&A – Demo thực tế – Kết thúc', NULL, 45, 10, '17:05', 'event'),
+
+-- ── Khóa 5: Xây dựng AI Agents Multi-Agent (6d5e4f3a) ──
+('6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c', 'Check-in & Warming up', NULL, 30, 0, '08:00', 'event'),
+('6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c', 'Module 1: AI Agent là gì?', 'Phân biệt Agent vs Chatbot vs Automation; Vòng lặp Perceive-Plan-Act', 60, 1, '08:30', 'module'),
+('6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c', 'Module 2: Tool Use & Function Calling', 'Thiết kế tools cho agent; Xử lý parallel tool calls; Validation output', 60, 2, '09:30', 'module'),
+('6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c', 'Giải lao & Tea-break', NULL, 20, 3, '10:30', 'break'),
+('6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c', 'Module 3: Xây dựng Multi-Agent System', 'Supervisor – Worker pattern; Memory chia sẻ; Tránh vòng lặp vô hạn', 90, 4, '10:50', 'module'),
+('6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c', 'Nghỉ trưa & Networking', NULL, 70, 5, '12:20', 'break'),
+('6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c', 'Module 4: Thực hành – Xây Agent CSKH tự động', 'Từ đầu đến cuối: phân tích yêu cầu → build → test → deploy', 90, 6, '13:30', 'module'),
+('6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c', 'Giải lao & Tea-break', NULL, 15, 7, '15:00', 'break'),
+('6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c', 'Module 5: Monitoring & Cải tiến liên tục Agent', 'Trace logging, Human feedback loop, Fine-tuning agent behavior', 60, 8, '15:15', 'module'),
+('6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c', 'Demo showcase – Q&A – Kết thúc', NULL, 45, 9, '16:15', 'event'),
+
+-- ── Khóa 6: Đường ống dữ liệu tự động (8b7c6d5e) ──
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Check-in & Warming up', NULL, 30, 0, '08:00', 'event'),
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Module 1: Tổng quan Data Pipeline với AI', 'ETL vs ELT; Kiến trúc hiện đại: Batch, Stream, Lambda; Khi nào cần AI trong pipeline', 60, 1, '08:30', 'module'),
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Module 2: Thu thập & Làm sạch dữ liệu tự động', 'Web scraping thông minh với AI; Data cleaning pipeline; Phát hiện & xử lý dữ liệu bẩn', 60, 2, '09:30', 'module'),
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Giải lao & Tea-break', NULL, 20, 3, '10:30', 'break'),
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Module 3: Chuyển đổi & Làm giàu dữ liệu bằng LLM', 'Phân loại, gán nhãn, tóm tắt dữ liệu quy mô lớn; Xử lý văn bản phi cấu trúc thành JSON', 60, 4, '10:50', 'module'),
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Module 4: Orchestration & Scheduling', 'Apache Airflow cơ bản; n8n workflow tự động; Trigger theo sự kiện, thời gian, điều kiện', 40, 5, '11:50', 'module'),
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Nghỉ trưa & Networking', NULL, 80, 6, '12:30', 'break'),
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Module 5: Lưu trữ & Truy vấn thông minh', 'Chọn đúng database cho từng loại dữ liệu; Vector DB cho AI search; Tối ưu query', 90, 7, '13:50', 'module'),
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Giải lao & Tea-break', NULL, 15, 8, '15:20', 'break'),
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Module 6: Thực hành – Xây pipeline báo cáo tự động', 'End-to-end: Thu thập → Xử lý → Lưu trữ → Gửi báo cáo qua email/Slack mỗi ngày', 60, 9, '15:35', 'module'),
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Demo – Q&A – Trao chứng nhận', NULL, 25, 10, '16:35', 'event'),
+('8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e', 'Kết thúc', NULL, 0, 11, '17:00', 'event'),
+
+-- ── Khóa 7: Thiết kế UI tạo sinh (7c6d5e4f) ──
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Check-in & Warming up', NULL, 30, 0, '08:00', 'event'),
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Module 1: AI trong quy trình thiết kế hiện đại', 'Vai trò của AI trong Design System; So sánh công cụ: Midjourney, DALL-E, Stable Diffusion, Figma AI', 60, 1, '08:30', 'module'),
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Module 2: Sinh ảnh & Visual Asset với AI', 'Viết prompt sinh ảnh chuyên nghiệp; Style reference, Negative prompt; Batch generation', 60, 2, '09:30', 'module'),
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Giải lao & Tea-break', NULL, 20, 3, '10:30', 'break'),
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Module 3: Prototyping nhanh với Claude Artifacts', 'Tạo wireframe, landing page, UI component ngay trong chat; Iterative design với AI', 60, 4, '10:50', 'module'),
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Module 4: Thiết kế hệ thống Design System hỗ trợ AI', 'Tổ chức token, component library; Figma Variables + AI auto-fill; Tài liệu tự động', 40, 5, '11:50', 'module'),
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Nghỉ trưa & Networking', NULL, 80, 6, '12:30', 'break'),
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Module 5: Thực hành – Thiết kế App UI hoàn chỉnh', 'Nhận brief → Mood board → Wireframe → Hi-fi prototype trong 90 phút với AI', 90, 7, '13:50', 'module'),
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Giải lao & Tea-break', NULL, 15, 8, '15:20', 'break'),
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Module 6: Trình bày & Phản biện thiết kế', 'Pitch design với AI storytelling; Nhận feedback nhanh; Cải tiến real-time', 45, 9, '15:35', 'module'),
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Demo showcase – Q&A – Trao chứng nhận', NULL, 40, 10, '16:20', 'event'),
+('7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d', 'Kết thúc', NULL, 0, 11, '17:00', 'event'),
+
+-- ── Khóa 8: Tối ưu hóa Prompt Engineering Nâng cao (5e4f3a2b) ──
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Check-in & Warming up', NULL, 30, 0, '08:00', 'event'),
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Module 1: Giải phẫu prompt đỉnh cao', 'Tại sao cùng câu hỏi mà kết quả khác nhau; 7 yếu tố cấu thành prompt hiệu quả', 60, 1, '08:30', 'module'),
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Module 2: Advanced Reasoning Techniques', 'Chain-of-Thought, Tree-of-Thought, ReAct pattern; Khi nào dùng kỹ thuật nào', 60, 2, '09:30', 'module'),
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Giải lao & Tea-break', NULL, 20, 3, '10:30', 'break'),
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Module 3: Kiểm soát đầu ra & Giảm thiểu lỗi', 'Constrained generation, Grounding, Self-consistency; Kỹ thuật tránh hallucination nâng cao', 60, 4, '10:50', 'module'),
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Module 4: Meta-Prompting & Prompt Generator', 'Dùng AI tạo ra prompt cho AI; Tự động tối ưu hóa prompt qua vòng lặp phản hồi', 40, 5, '11:50', 'module'),
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Nghỉ trưa & Networking', NULL, 80, 6, '12:30', 'break'),
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Module 5: Prompt cho từng ngành nghề', 'Bộ template tối ưu cho: Kế toán – HR – Sales – Marketing – Kỹ thuật – Quản lý', 90, 7, '13:50', 'module'),
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Giải lao & Tea-break', NULL, 15, 8, '15:20', 'break'),
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Module 6: Xây dựng Prompt Library cá nhân hóa', 'Hệ thống quản lý prompt, version control, chia sẻ trong team; Đo lường hiệu quả prompt', 60, 9, '15:35', 'module'),
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Demo – Q&A – Trao chứng nhận', NULL, 25, 10, '16:35', 'event'),
+('5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b', 'Kết thúc', NULL, 0, 11, '17:00', 'event');
 
 -- 4. Reviews
 INSERT INTO public.reviews (course_id, rating, content, student_name, student_avatar_url)
@@ -176,3 +286,31 @@ VALUES
 ('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 5, 'Khóa học cung cấp kiến thức vô cùng thực tế. Từ một người không biết gì về AI, giờ tôi đã có thể tự động hóa 40% công việc hàng ngày của mình. Cảm ơn đội ngũ giảng viên rất nhiều!', 'Nguyễn Mai Trang', NULL),
 ('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 5, 'Phương pháp giảng dạy rất hệ thống. Việc áp dụng ngay vào các case study thực tế của doanh nghiệp giúp tôi hiểu sâu và có thể triển khai ngay lập tức vào công việc.', 'Trần Hoàng Long', NULL),
 ('9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f', 5, 'Công cụ Midjourney và ChatGPT được hướng dẫn rất chi tiết từ cơ bản đến nâng cao. Chất lượng hình ảnh thiết kế của team tôi đã cải thiện rõ rệt sau khi tham gia khóa học.', 'Phạm Quang Huy', NULL);
+
+-- ════════════════════════════════════════════════════════════════
+-- 5. Cập nhật curriculum_headline cho tất cả 8 khóa
+-- ════════════════════════════════════════════════════════════════
+UPDATE public.courses SET curriculum_headline = '1 ngày – 6 module thực chiến'
+  WHERE id = '9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f';
+
+UPDATE public.courses SET curriculum_headline = '1 ngày – 6 module thực chiến'
+  WHERE id = 'e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b';
+
+UPDATE public.courses SET curriculum_headline = '1 ngày – 6 module thực chiến'
+  WHERE id = 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d';
+
+UPDATE public.courses SET curriculum_headline = '1 ngày – 6 module thực chiến'
+  WHERE id = 'f3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c';
+
+UPDATE public.courses SET curriculum_headline = '1 ngày – 5 module thực chiến'
+  WHERE id = '6d5e4f3a-2b1c-0d9e-8d7c-6b5a4f3e2d1c';
+
+UPDATE public.courses SET curriculum_headline = '1 ngày – 6 module thực chiến'
+  WHERE id = '8b7c6d5e-4f3a-2b1c-0d9e-8d7c6b5a4f3e';
+
+UPDATE public.courses SET curriculum_headline = '1 ngày – 6 module thực chiến'
+  WHERE id = '7c6d5e4f-3a2b-1c0d-9e8d-7c6b5a4f3e2d';
+
+UPDATE public.courses SET curriculum_headline = '1 ngày – 6 module thực chiến'
+  WHERE id = '5e4f3a2b-1c0d-9e8d-7c6b-5a4f3e2d1c0b';
+

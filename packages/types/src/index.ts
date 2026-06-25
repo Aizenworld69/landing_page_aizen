@@ -19,12 +19,18 @@ export interface Course {
   created_at: string;
 }
 
+export type ModuleItemType = 'module' | 'break' | 'event';
+
 export interface CourseModule {
   id: string;
   course_id: string;
   title: string;
+  subtitle: string | null;       // Dòng phụ hiển thị dưới title trong timeline
+  description: string | null;    // Mô tả chi tiết (optional)
   duration_minutes: number;
   order_index: number;
+  start_time: string | null;     // 'HH:MM' — nếu null thì auto-calculate
+  item_type: ModuleItemType;     // 'module' | 'break' | 'event'
 }
 
 export interface CourseWithDetails extends Course {
@@ -91,4 +97,35 @@ export interface Registration {
   company: string | null;
   plan: PlanType;
   created_at: string;
+}
+
+// ============================================================
+// Blogs
+// ============================================================
+export type BlogStatus = 'draft' | 'published' | 'archived';
+
+export interface BlogImage {
+  url: string;
+  caption?: string;
+}
+
+export interface Blog {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body_html: string;
+  thumbnail_url: string | null;
+  category: string;
+  author: string;
+  source_name: string | null;
+  source_url: string | null;
+  images: BlogImage[];
+  status: BlogStatus;
+  published_at: string | null;
+  created_at: string;
+}
+
+export interface BlogWithRelated extends Blog {
+  related: Blog[];
 }

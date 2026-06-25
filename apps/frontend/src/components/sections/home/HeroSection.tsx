@@ -1,16 +1,13 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-[#EFF6FF] py-24 md:py-36">
-      {/* Animated background blobs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-sky-200/50 rounded-full blur-[140px] animate-pulse-glow" />
-        <div className="absolute top-10 right-10 w-48 h-48 bg-blue-300/20 rounded-full blur-[60px] animate-float" style={{animationDelay:'1s'}} />
-        <div className="absolute bottom-10 left-10 w-32 h-32 bg-sky-400/20 rounded-full blur-[50px] animate-float" style={{animationDelay:'2s'}} />
-        <div className="absolute top-8 right-1/4 w-20 h-20 border-2 border-sky-300/30 rounded-full animate-spin-slow" />
-        <div className="absolute bottom-12 left-1/4 w-10 h-10 border border-sky-400/40 rounded-full animate-spin-slow" style={{animationDuration:'8s'}} />
+      {/* Background — dùng CSS thay vì nhiều div animation nặng */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-sky-200/40 rounded-full blur-[100px] animate-pulse-glow" />
+        <div className="absolute top-8 right-1/4 w-16 h-16 border-2 border-sky-300/20 rounded-full animate-spin-slow" />
       </div>
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

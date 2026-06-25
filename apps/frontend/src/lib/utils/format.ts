@@ -1,4 +1,4 @@
-﻿import { format, differenceInDays, isPast } from 'date-fns';
+import { format, differenceInDays, isPast } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
 export function formatDate(date: string | Date): string {
@@ -7,6 +7,11 @@ export function formatDate(date: string | Date): string {
 
 export function formatDateLong(date: string | Date): string {
   return format(new Date(date), "EEEE, dd 'tháng' MM 'năm' yyyy", { locale: vi });
+}
+
+/** Format kieu "17 Tháng 03, 2026" - dung cho blog */
+export function formatDateBlog(date: string | Date): string {
+  return format(new Date(date), "dd 'Tháng' MM, yyyy", { locale: vi });
 }
 
 export function getDaysUntil(date: string | Date): number {

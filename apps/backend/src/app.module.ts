@@ -11,6 +11,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 
 import { AuthModule } from './modules/auth/auth.module';
+import { BlogsModule } from './modules/blogs/blogs.module';
 import { CoursesModule } from './modules/courses/courses.module';
 import { InstructorsModule } from './modules/instructors/instructors.module';
 import { RegistrationsModule } from './modules/registrations/registrations.module';
@@ -36,6 +37,7 @@ import { HealthController } from './health.controller';
     }),
     SupabaseModule,
     AuthModule,
+    BlogsModule,
     CoursesModule,
     InstructorsModule,
     RegistrationsModule,
@@ -49,4 +51,3 @@ import { HealthController } from './health.controller';
   ],
 })
 export class AppModule {}
-

@@ -1,4 +1,5 @@
 export type CourseStatus = 'upcoming' | 'completed';
+export type ModuleItemType = 'module' | 'break' | 'event';
 
 export interface Course {
   id: string;
@@ -21,8 +22,12 @@ export interface CourseModule {
   id: string;
   course_id: string;
   title: string;
+  subtitle: string | null;       // Mô tả phụ hiển thị dưới title
+  description: string | null;    // Chi tiết nội dung (optional)
   duration_minutes: number;
   order_index: number;
+  start_time: string | null;     // 'HH:MM' — nếu null thì auto-calculate
+  item_type: ModuleItemType;     // 'module' | 'break' | 'event'
 }
 
 export interface CourseWithDetails extends Course {

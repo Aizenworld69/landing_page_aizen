@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+﻿import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
@@ -6,7 +6,7 @@ import { CourseHero } from '@/components/sections/course-detail/CourseHero';
 import { CourseSkills } from '@/components/sections/course-detail/CourseSkills';
 import { CourseCurriculum } from '@/components/sections/course-detail/CourseCurriculum';
 import { InstructorCard } from '@/components/sections/course-detail/InstructorCard';
-import { RegistrationForm } from '@/components/sections/course-detail/RegistrationForm';
+import { CoursePlanSection } from '@/components/sections/course-detail/CoursePlanSection';
 import type { CourseWithDetails } from '@aizen/types';
 
 async function getCourse(slug: string): Promise<CourseWithDetails | null> {
@@ -51,33 +51,45 @@ export default async function CourseDetailPage({
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            {/* Left — course content */}
-            <div className="lg:col-span-2">
-              <CourseHero course={course} />
-              <CourseSkills />
-              <CourseCurriculum modules={course.course_modules} />
-              {course.instructors && (
-                <InstructorCard
-                  instructor={{
-                    ...course.instructors,
-                    bio: course.instructors.bio ?? '',
-                  }}
-                />
-              )}
-            </div>
+      <main
+        className="min-h-screen"
+        style={{ backgroundImage: "url('/backgoundTrangkhoahoc.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}
+      >
+        {/* Hero - narrow centered */}
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-2">
+          <CourseHero course={course} />
+        </div>
 
-            {/* Right — sticky registration form */}
-            <div className="lg:col-span-1">
-              <RegistrationForm
-                courseId={course.id}
-                price={course.price}
-                priceGroup={course.price_group}
-              />
-            </div>
+        {/* Skills - wider, centered */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <CourseSkills skills={course.skills} />
+        </div>
+
+        {/* Curriculum - narrow centered */}
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <CourseCurriculum modules={course.course_modules} headline={course.curriculum_headline} />
+        </div>
+
+        {/* Instructor - narrow centered */}
+        {course.instructors && (
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <InstructorCard
+              instructor={{
+                ...course.instructors,
+                bio: course.instructors.bio ?? '',
+              }}
+            />
           </div>
+        )}
+
+        {/* Plan section - wider, centered */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+          <CoursePlanSection
+            courseId={course.id}
+            courseTitle={course.title}
+            price={course.price}
+            priceGroup={course.price_group}
+          />
         </div>
       </main>
       <Footer />
