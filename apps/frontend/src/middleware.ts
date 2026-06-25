@@ -1,53 +1,29 @@
-import { createServerClient } from '@supabase/ssr';
-import type { CookieOptions } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const PROTECTED_PATHS = ['/my-courses'];
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-
   const isProtected = PROTECTED_PATHS.some((path) =>
     req.nextUrl.pathname.startsWith(path),
   );
-  if (!isProtected) return res;
+  if (!isProtected) return NextResponse.next();
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Check custom JWT cookie
+  const accessToken = req.cookies.get('access_token');
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    const token = req.cookies.get('access_token');
-    if (!token) {
-      const loginUrl = new URL('/auth/login', req.url);
-      loginUrl.searchParams.set('redirect', req.nextUrl.pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-    return res;
-  }
+  // Check Supabase auth cookie (sb-<projectRef>-auth-token)
+  const supabaseCookie = req.cookies.getAll().find(
+    (c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'),
+  );
 
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll: () => req.cookies.getAll(),
-      setAll: (
-        cookiesToSet: { name: string; value: string; options: CookieOptions }[],
-      ) => {
-        cookiesToSet.forEach(({ name, value, options }) =>
-          res.cookies.set(name, value, options),
-        );
-      },
-    },
-  });
-
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session) {
+  if (!accessToken && !supabaseCookie) {
     const loginUrl = new URL('/auth/login', req.url);
     loginUrl.searchParams.set('redirect', req.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  return res;
+  return NextResponse.next();
 }
 
 export const config = {
