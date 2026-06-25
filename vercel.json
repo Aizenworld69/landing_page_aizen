@@ -2,7 +2,6 @@
   "buildCommand": "turbo run build --filter=@aizen/frontend",
   "outputDirectory": "apps/frontend/.next",
   "installCommand": "npm install",
-  "framework": "nextjs",
   "rewrites": [
     {
       "source": "/api/:path*",
