@@ -19,8 +19,8 @@ export async function createRegistration(
   const { data } = await apiClient.post<{ message: string; data: Registration }>(
     '/registrations',
     {
-      course_id: dto.courseId,
-      full_name: dto.fullName,
+      courseId: dto.courseId,
+      fullName: dto.fullName,
       phone: dto.phone,
       email: dto.email,
       company: dto.company,

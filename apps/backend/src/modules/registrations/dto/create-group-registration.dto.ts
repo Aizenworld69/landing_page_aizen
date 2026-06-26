@@ -3,7 +3,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
   IsArray,
   ValidateNested,
   ArrayMinSize,
@@ -42,7 +41,8 @@ export class GroupMemberDto {
 
 export class CreateGroupRegistrationDto {
   @ApiProperty()
-  @IsUUID()
+  @IsString()
+  @IsNotEmpty()
   course_id: string;
 
   @ApiProperty({ description: 'Nguồn biết đến chương trình' })

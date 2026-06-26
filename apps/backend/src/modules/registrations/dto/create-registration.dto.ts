@@ -1,10 +1,11 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateRegistrationDto {
   @ApiProperty()
-  @IsUUID()
+  @IsString()
+  @IsNotEmpty()
   courseId: string;
 
   @ApiProperty()
