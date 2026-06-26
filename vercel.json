@@ -1,7 +1,7 @@
 {
-  "buildCommand": "cd ../.. && turbo run build --filter=@aizen/frontend",
-  "outputDirectory": ".next",
-  "installCommand": "cd ../.. && npm install",
+  "buildCommand": "npx turbo run build --filter=@aizen/frontend",
+  "outputDirectory": "apps/frontend/.next",
+  "installCommand": "npm ci",
   "rewrites": [
     {
       "source": "/api/:path*",
