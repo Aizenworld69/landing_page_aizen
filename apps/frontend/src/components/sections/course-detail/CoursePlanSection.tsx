@@ -1,4 +1,6 @@
-﻿'use client';
+'use client';
+
+import { motion } from 'framer-motion';
 
 import { useState, useEffect, useCallback } from 'react';
 import { formatCurrency } from '@/lib/utils/format';
@@ -388,51 +390,124 @@ interface PlanCardProps {
 
 function PlanCard({ plan, onClick }: PlanCardProps) {
   const isEarlyBird = plan.key === 'early_bird';
+  const isGroup4 = plan.key === 'group_4';
+  const isGroup2 = plan.key === 'group_2';
+
+  const getBadgeGradient = () => {
+    if (plan.badge?.color.includes('amber')) return 'linear-gradient(90deg, #d97706, #f59e0b)';
+    if (plan.badge?.color.includes('emerald')) return 'linear-gradient(90deg, #059669, #10b981)';
+    return 'linear-gradient(90deg, #0284c7, #0ea5e9)';
+  };
+
+  const getCardBorder = () => {
+    if (isEarlyBird) return 'rgba(245,158,11,0.2)';
+    if (isGroup4) return 'rgba(16,185,129,0.3)';
+    if (isGroup2) return 'rgba(14,165,233,0.3)';
+    return 'rgba(255,255,255,0.1)';
+  };
+
+  const getCardGlow = () => {
+    if (isGroup4) return '0 8px 24px rgba(16,185,129,0.12)';
+    if (isGroup2) return '0 8px 24px rgba(14,165,233,0.12)';
+    return 'none';
+  };
+
   return (
-    <div className={`relative flex flex-col rounded-2xl border transition-all duration-200 overflow-hidden ${
-      isEarlyBird
-        ? 'border-white/8 bg-white/3 opacity-80'
-        : 'border-white/10 bg-white/5 hover:border-sky-500/50 hover:bg-sky-500/5 hover:-translate-y-1 cursor-pointer hover:shadow-lg hover:shadow-sky-500/10'
-    }`}
+    <div
+      className={`relative flex flex-col rounded-2xl overflow-hidden h-full ${
+        isEarlyBird ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer group'
+      }`}
+      style={{
+        background: isEarlyBird
+          ? 'rgba(15,25,40,0.6)'
+          : 'rgba(15,28,48,0.8)',
+        border: `1px solid ${getCardBorder()}`,
+        boxShadow: getCardGlow(),
+        backdropFilter: 'blur(8px)',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+        minHeight: 200,
+      }}
       onClick={isEarlyBird ? undefined : onClick}
-      style={{ minHeight: 200 }}
+      onMouseEnter={(e) => {
+        if (isEarlyBird) return;
+        const el = e.currentTarget as HTMLElement;
+        el.style.transform = 'translateY(-5px)';
+        if (isGroup4) el.style.boxShadow = '0 12px 32px rgba(16,185,129,0.2)';
+        else if (isGroup2) el.style.boxShadow = '0 12px 32px rgba(14,165,233,0.2)';
+        else el.style.boxShadow = '0 12px 32px rgba(14,165,233,0.15)';
+      }}
+      onMouseLeave={(e) => {
+        if (isEarlyBird) return;
+        const el = e.currentTarget as HTMLElement;
+        el.style.transform = 'translateY(0)';
+        el.style.boxShadow = getCardGlow();
+      }}
     >
+      {/* Badge strip */}
       {plan.badge && (
-        <div className={`absolute top-0 inset-x-0 py-1 text-center text-[10px] font-bold uppercase tracking-wider text-white ${plan.badge.color}`}>
+        <div
+          className="py-1.5 text-center text-[10px] font-black uppercase tracking-[0.15em] text-white"
+          style={{ background: getBadgeGradient() }}
+        >
           {plan.badge.text}
         </div>
       )}
 
-      <div className={`flex flex-col flex-1 p-5 ${plan.badge ? 'pt-8' : 'pt-5'}`}>
+      <div className={`flex flex-col flex-1 p-5 ${plan.badge ? 'pt-4' : 'pt-5'}`}>
         {/* Icon */}
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-          isEarlyBird ? 'bg-amber-500/15' : 'bg-sky-500/15'
-        }`}>
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+          style={{
+            background: isEarlyBird
+              ? 'rgba(245,158,11,0.12)'
+              : isGroup4
+              ? 'rgba(16,185,129,0.12)'
+              : 'rgba(14,165,233,0.12)',
+          }}
+        >
           {plan.icon}
         </div>
 
         {/* Name */}
-        <p className="font-bold text-white text-base mb-0.5">{plan.label}</p>
-        <p className="text-slate-400 text-xs mb-4">{plan.sublabel}</p>
+        <p className="font-black text-white text-base mb-0.5 tracking-tight">{plan.label}</p>
+        <p className="text-slate-500 text-xs mb-4">{plan.sublabel}</p>
 
         {/* Price */}
         <div className="mt-auto">
           {plan.originalTotal > plan.totalPrice && (
-            <p className="text-slate-500 line-through text-xs mb-0.5">
+            <p className="text-slate-600 line-through text-xs mb-0.5">
               {formatCurrency(plan.originalTotal)}
             </p>
           )}
-          <p className={`font-extrabold text-xl mb-4 ${isEarlyBird ? 'text-amber-300' : 'text-white'}`}>
-            {formatCurrency(plan.totalPrice)}<span className="text-sm font-normal text-slate-400">đ</span>
+          <p
+            className="font-black text-xl mb-4 leading-tight"
+            style={{
+              color: isEarlyBird
+                ? '#fcd34d'
+                : isGroup4
+                ? '#34d399'
+                : '#f8fafc',
+            }}
+          >
+            {formatCurrency(plan.totalPrice)}
+            <span className="text-sm font-normal text-slate-500">đ</span>
           </p>
 
           {isEarlyBird ? (
-            <div className="w-full py-2.5 rounded-xl border border-white/15 text-slate-400 text-sm font-semibold text-center">
+            <div className="w-full py-2.5 rounded-xl border border-white/10 text-slate-500 text-xs font-semibold text-center">
               Đã hết hạn đăng ký
             </div>
           ) : (
             <button
-              className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-bold transition-colors flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 rounded-xl text-white text-sm font-bold flex items-center justify-center gap-1.5 transition-all"
+              style={{
+                background: isGroup4
+                  ? 'linear-gradient(90deg, #059669, #10b981)'
+                  : 'linear-gradient(90deg, #0284c7, #0ea5e9)',
+                boxShadow: isGroup4
+                  ? '0 4px 12px rgba(16,185,129,0.3)'
+                  : '0 4px 12px rgba(14,165,233,0.3)',
+              }}
               onClick={(e) => { e.stopPropagation(); onClick(); }}
             >
               {plan.buttonLabel}
@@ -508,17 +583,38 @@ export function CoursePlanSection({ courseId, courseTitle, price, priceGroup }: 
     <>
       <section id="dang-ky" className="py-12">
         {/* Heading */}
-        <div className="text-center mb-8">
-          <p className="text-sky-400 text-xs font-bold uppercase tracking-widest mb-2">ĐĂNG KÝ</p>
-          <h2 className="text-2xl md:text-3xl font-extrabold text-white">
-            Chọn hình thức đăng ký
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-10"
+        >
+          <p className="inline-flex items-center gap-2 text-[11px] font-black tracking-[0.2em] text-[#38bdf8] uppercase mb-3">
+            <span className="w-6 h-px bg-[#38bdf8]/60" />
+            ĐĂNG KÝ NGAY
+            <span className="w-6 h-px bg-[#38bdf8]/60" />
+          </p>
+          <h2 className="text-3xl md:text-4xl font-black text-white">
+            Chọn hình thức{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#38bdf8] to-[#3b82f6]">
+              đăng ký
+            </span>
           </h2>
-        </div>
+        </motion.div>
 
         {/* 4 plan cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {PLANS.map((plan) => (
-            <PlanCard key={plan.key} plan={plan} onClick={() => setActivePlan(plan)} />
+          {PLANS.map((plan, i) => (
+            <motion.div
+              key={plan.key}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <PlanCard plan={plan} onClick={() => setActivePlan(plan)} />
+            </motion.div>
           ))}
         </div>
       </section>
