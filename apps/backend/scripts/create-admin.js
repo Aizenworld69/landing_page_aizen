@@ -53,12 +53,15 @@ async function createAdmin() {
     email_confirm: true,
     user_metadata: {
       full_name: 'AIZEN Admin',
+    },
+    app_metadata: {
+      role: 'admin',
     }
   });
 
   if (error) {
     if (error.message.includes('already registered') || error.message.includes('already exists') || error.status === 422) {
-      console.log('User already exists. Attempting to update password...');
+      console.log('User already exists. Attempting to update password and role...');
       
       // List users to find the exact id
       const { data: usersData, error: listError } = await supabase.auth.admin.listUsers();
@@ -71,12 +74,15 @@ async function createAdmin() {
       if (existingUser) {
         const { error: updateError } = await supabase.auth.admin.updateUserById(
           existingUser.id,
-          { password }
+          { 
+            password,
+            app_metadata: { role: 'admin' }
+          }
         );
         if (updateError) {
-          console.error('Error updating password:', updateError.message);
+          console.error('Error updating user:', updateError.message);
         } else {
-          console.log('Password updated successfully!');
+          console.log('Password and admin role updated successfully!');
         }
       } else {
         console.error('Could not find existing user to update.');
