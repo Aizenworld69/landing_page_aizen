@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import useSWR from 'swr';
 import { getCourses, type CourseQuery } from '@/lib/api/courses.api';
 import type { Course, PaginatedResponse } from '@aizen/types';
 
@@ -11,26 +12,21 @@ const EMPTY: PaginatedResponse<Course> = {
 
 export function useCourses(initialQuery: CourseQuery = {}) {
   const [query, setQuery] = useState<CourseQuery>(initialQuery);
-  const [data, setData] = useState<PaginatedResponse<Course>>(EMPTY);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetch = useCallback(async (q: CourseQuery) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await getCourses(q);
-      setData(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi tải khóa học');
-    } finally {
-      setIsLoading(false);
+  const { data, error, isLoading, mutate } = useSWR(
+    ['/courses', query],
+    () => getCourses(query),
+    {
+      fallbackData: EMPTY,
+      revalidateOnFocus: false,
     }
-  }, []);
+  );
 
-  useEffect(() => {
-    void fetch(query);
-  }, [query, fetch]);
-
-  return { data, isLoading, error, setQuery, refetch: () => fetch(query) };
+  return {
+    data: data ?? EMPTY,
+    isLoading,
+    error: error instanceof Error ? error.message : (error ? String(error) : null),
+    setQuery,
+    refetch: () => mutate(),
+  };
 }

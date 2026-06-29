@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
 
 const USER_PROTECTED = ['/my-courses'];
 const ADMIN_PROTECTED = ['/admin'];
@@ -15,7 +16,19 @@ export async function middleware(req: NextRequest) {
     // Trang đăng nhập admin
     if (ADMIN_PUBLIC.some((p) => pathname.startsWith(p))) {
       if (adminToken?.value) {
-        return NextResponse.redirect(new URL('/admin/tong-quan', req.url));
+        try {
+          const secretStr = process.env.JWT_SECRET;
+          if (secretStr) {
+            const secret = new TextEncoder().encode(secretStr);
+            const { payload } = await jwtVerify(adminToken.value, secret);
+            const role = (payload.app_metadata as { role?: string })?.role || payload.role;
+            if (role === 'admin') {
+              return NextResponse.redirect(new URL('/admin/tong-quan', req.url));
+            }
+          }
+        } catch {
+          // Token is invalid, let user access login page
+        }
       }
       return NextResponse.next();
     }
@@ -25,6 +38,27 @@ export async function middleware(req: NextRequest) {
       url.searchParams.set('redirect', pathname);
       return NextResponse.redirect(url);
     }
+
+    // Verify token using jose
+    try {
+      const secretStr = process.env.JWT_SECRET;
+      if (!secretStr) {
+        throw new Error('JWT_SECRET is not configured');
+      }
+      const secret = new TextEncoder().encode(secretStr);
+      const { payload } = await jwtVerify(adminToken.value, secret);
+      const role = (payload.app_metadata as { role?: string })?.role || payload.role;
+      if (role !== 'admin') {
+        throw new Error('Not admin');
+      }
+    } catch {
+      const url = new URL('/admin/dangnhap', req.url);
+      url.searchParams.set('redirect', pathname);
+      const response = NextResponse.redirect(url);
+      response.cookies.delete('admin_token');
+      return response;
+    }
+
     return NextResponse.next();
   }
 

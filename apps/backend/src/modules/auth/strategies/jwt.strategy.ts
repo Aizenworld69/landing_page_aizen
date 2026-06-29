@@ -17,14 +17,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: { sub?: string; email?: string; role?: string }): JwtPayload {
+  validate(payload: {
+    sub?: string;
+    email?: string;
+    role?: string;
+    app_metadata?: { role?: string };
+  }): JwtPayload {
     if (!payload.sub || !payload.email) {
       throw new UnauthorizedException('Invalid token payload');
     }
     return {
       sub: payload.sub,
       email: payload.email,
-      role: payload.role,
+      role: payload.app_metadata?.role || payload.role,
     };
   }
 }

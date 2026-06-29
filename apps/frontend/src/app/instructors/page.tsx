@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
 import { InstructorGrid } from '@/components/sections/instructors/InstructorGrid';
@@ -15,7 +15,7 @@ async function getInstructors(): Promise<Instructor[]> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/instructors`,
-      { cache: 'no-store' },
+      { next: { revalidate: 60 } },
     );
     if (!res.ok) return [];
     const json = (await res.json()) as { data: Instructor[] };

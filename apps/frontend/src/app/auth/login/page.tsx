@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { apiClient } from '@/lib/api/api-client';
-import { setUserSession } from '@/lib/auth';
+import { useAuthStore } from '@/store/auth.store';
 
 interface LoginForm {
   email: string;
@@ -31,7 +31,13 @@ export default function LoginPage() {
         '/auth/login',
         form,
       );
-      setUserSession(data.data.accessToken, data.data.user);
+      const { accessToken, user } = data.data;
+      useAuthStore.getState().setAuth({
+        id: user.id,
+        email: user.email,
+        full_name: user.fullName || user.full_name || '',
+        avatar_url: user.avatarUrl || user.avatar_url || null,
+      }, accessToken);
       router.push('/my-courses');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Đăng nhập thất bại.');

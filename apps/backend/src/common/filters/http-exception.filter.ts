@@ -16,6 +16,14 @@ interface ErrorResponse {
   path: string;
 }
 
+interface PostgresError extends Error {
+  code: string;
+}
+
+function isPostgresError(e: unknown): e is PostgresError {
+  return e instanceof Error && 'code' in e && typeof (e as { code?: unknown }).code === 'string';
+}
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
@@ -36,13 +44,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
         'message' in (exceptionResponse as object)
           ? (exceptionResponse as { message: string | string[] }).message
           : exception.message;
+    } else if (isPostgresError(exception)) {
+      message = exception.message;
+      this.logger.error(`Database error [${exception.code}]: ${exception.message}`, exception.stack);
+      status = HttpStatus.BAD_REQUEST;
     } else if (exception instanceof Error) {
       message = exception.message;
-      const err = exception as any;
-      if (err.code) {
-        this.logger.error(`Database error [${err.code}]: ${err.message}`, err.stack);
-        status = HttpStatus.BAD_REQUEST;
-      }
     }
 
     const body: ErrorResponse = {

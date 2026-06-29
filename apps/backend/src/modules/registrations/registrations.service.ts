@@ -27,18 +27,8 @@ export class RegistrationsService {
   async create(dto: CreateRegistrationDto) {
     const course = await this.verifyCourse(dto.courseId);
 
-    // Check duplicate
-    const { data: existing } = await this.supabase
-      .from('registrations')
-      .select('id')
-      .eq('course_id', dto.courseId)
-      .eq('email', dto.email)
-      .maybeSingle();
-
-    if (existing) {
-      throw new BadRequestException('Email này đã đăng ký khóa học này rồi');
-    }
-
+    // UNIQUE constraint in Supabase database:
+    // ALTER TABLE registrations ADD CONSTRAINT uq_reg_course_email UNIQUE (course_id, email);
     const { data, error } = await this.supabase
       .from('registrations')
       .insert({
@@ -55,6 +45,9 @@ export class RegistrationsService {
       .single();
 
     if (error) {
+      if (error.code === '23505') {
+        throw new BadRequestException('Email này đã đăng ký khóa học này rồi');
+      }
       this.logger.error('Create registration failed', error);
       throw new BadRequestException('Đăng ký thất bại, vui lòng thử lại');
     }
@@ -84,22 +77,6 @@ export class RegistrationsService {
   async createGroup(dto: CreateGroupRegistrationDto) {
     const course = await this.verifyCourse(dto.course_id);
 
-    // Check duplicate email cho từng member
-    for (const member of dto.members) {
-      const { data: existing } = await this.supabase
-        .from('registrations')
-        .select('id')
-        .eq('course_id', dto.course_id)
-        .eq('email', member.email)
-        .maybeSingle();
-
-      if (existing) {
-        throw new BadRequestException(
-          `Email "${member.email}" đã đăng ký khóa học này rồi`,
-        );
-      }
-    }
-
     // Check 2 member không được dùng cùng email
     const emails = dto.members.map((m) => m.email.toLowerCase());
     if (new Set(emails).size !== emails.length) {
@@ -118,12 +95,17 @@ export class RegistrationsService {
       plan: 'group',
     }));
 
+    // UNIQUE constraint in Supabase database:
+    // ALTER TABLE registrations ADD CONSTRAINT uq_reg_course_email UNIQUE (course_id, email);
     const { data, error } = await this.supabase
       .from('registrations')
       .insert(rows)
       .select('id, created_at');
 
     if (error) {
+      if (error.code === '23505') {
+        throw new BadRequestException('Một hoặc nhiều email trong nhóm đã đăng ký khóa học này rồi');
+      }
       this.logger.error('Create group registration failed', error);
       throw new BadRequestException('Đăng ký thất bại, vui lòng thử lại');
     }
@@ -181,27 +163,16 @@ export class RegistrationsService {
   // Admin: stats
   // ─────────────────────────────────────────────
   async getStats() {
-    const [totalRes, todayRes, courseRes] = await Promise.all([
-      this.supabase.from('registrations').select('id', { count: 'exact', head: true }),
-      this.supabase.from('registrations').select('id', { count: 'exact', head: true })
-        .gte('created_at', new Date(new Date().toDateString()).toISOString()),
-      this.supabase.from('registrations').select('course_id, courses(title)', { count: 'exact' }),
-    ]);
-
-    // Group by course
-    const byCoursMap: Record<string, { courseId: string; title: string; count: number }> = {};
-    for (const row of (courseRes.data ?? []) as unknown as Array<{ course_id: string; courses: { title: string } | null }>) {
-      const id = row.course_id;
-      if (!byCoursMap[id]) {
-        byCoursMap[id] = { courseId: id, title: row.courses?.title ?? id, count: 0 };
-      }
-      byCoursMap[id]!.count++;
+    const { data, error } = await this.supabase.rpc('get_registration_stats');
+    if (error) {
+      this.logger.error('Failed to get stats via RPC', error);
+      throw new BadRequestException('Lỗi khi truy vấn dữ liệu thống kê');
     }
 
-    return {
-      total: totalRes.count ?? 0,
-      today: todayRes.count ?? 0,
-      byCourse: Object.values(byCoursMap).sort((a, b) => b.count - a.count),
+    return data as {
+      total: number;
+      today: number;
+      byCourse: { courseId: string; title: string; count: number }[];
     };
   }
   // ─────────────────────────────────────────────

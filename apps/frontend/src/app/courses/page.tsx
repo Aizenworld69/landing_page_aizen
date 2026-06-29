@@ -32,7 +32,7 @@ async function fetchCourses(params: SearchParams): Promise<PaginatedResponse<Cou
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/courses?${query.toString()}`,
-      { next: { revalidate: 30 } },
+      { next: { revalidate: 60 } },
     );
     if (!res.ok) throw new Error('Fetch failed');
     const json = (await res.json()) as { data: PaginatedResponse<Course> };

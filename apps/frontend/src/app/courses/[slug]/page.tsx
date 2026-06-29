@@ -1,4 +1,4 @@
-﻿import { notFound } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
@@ -13,7 +13,7 @@ async function getCourse(slug: string): Promise<CourseWithDetails | null> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/courses/${slug}`,
-      { next: { revalidate: 300 } },
+      { next: { revalidate: 60 } },
     );
     if (res.status === 404) return null;
     if (!res.ok) throw new Error('fetch failed');

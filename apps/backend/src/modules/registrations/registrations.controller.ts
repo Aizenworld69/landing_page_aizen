@@ -1,5 +1,6 @@
-﻿import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { RegistrationsService } from './registrations.service';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { CreateGroupRegistrationDto } from './dto/create-group-registration.dto';
@@ -7,6 +8,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('Registrations')
 @Controller('registrations')
+@Throttle({ default: { limit: 5, ttl: 60000 } })
 export class RegistrationsController {
   constructor(private readonly registrationsService: RegistrationsService) {}
 

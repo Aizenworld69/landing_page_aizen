@@ -4,7 +4,7 @@ import { CoursesService } from './courses.service';
 import { QueryCourseDto } from './dto/query-course.dto';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { AdminGuard } from '../../common/guards/admin.guard';
 
 @ApiTags('Courses')
 @Controller('courses')
@@ -24,7 +24,7 @@ export class CoursesController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AdminGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Them khoa hoc moi (Admin only)' })
   create(@Body() createCourseDto: CreateCourseDto) {
@@ -32,7 +32,7 @@ export class CoursesController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AdminGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cap nhat khoa hoc (Admin only)' })
   update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
@@ -40,7 +40,7 @@ export class CoursesController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AdminGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Xoa khoa hoc (Admin only)' })
   remove(@Param('id') id: string) {
