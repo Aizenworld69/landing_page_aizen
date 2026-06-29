@@ -10,7 +10,13 @@ let jwksClient: ReturnType<typeof createRemoteJWKSet> | null = null;
 
 function getJWKSClient(supabaseUrl: string) {
   if (!jwksClient) {
-    jwksClient = createRemoteJWKSet(new URL(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/jwks`));
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    jwksClient = createRemoteJWKSet(
+      new URL(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/jwks`),
+      {
+        headers: anonKey ? { apikey: anonKey } : undefined,
+      }
+    );
   }
   return jwksClient;
 }
