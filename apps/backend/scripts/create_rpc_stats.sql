@@ -14,7 +14,7 @@ RETURNS json AS $$
       FROM (
         SELECT 
           r.course_id AS "courseId",
-          COALESCE(c.title, r.course_id) AS "title",
+          COALESCE(c.title, r.course_id::text) AS "title",
           COUNT(*)::integer AS "count"
         FROM registrations r
         LEFT JOIN courses c ON r.course_id = c.id
