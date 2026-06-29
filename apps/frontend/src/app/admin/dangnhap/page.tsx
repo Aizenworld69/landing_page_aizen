@@ -63,19 +63,19 @@ function LoginForm() {
             </svg>
           </div>
           <h1 className="text-2xl font-black text-white">AIZEN Admin</h1>
-          <p className="text-slate-500 text-sm mt-1">Đăng nhập để quản lý hệ thống</p>
+          <p className="text-slate-300 text-sm mt-1">Đăng nhập để quản lý hệ thống</p>
         </div>
 
         {/* Card */}
         <div
           className="rounded-2xl border border-white/10 p-8"
-          style={{ background: 'rgba(15,28,48,0.85)' }}
+          style={{ background: 'rgba(15,28,48,0.9)' }}
         >
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
             {/* Email */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wide">
                 Tài khoản hoặc Email
               </label>
               <input
@@ -84,14 +84,19 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="aizen hoặc admin@aizen.edu.vn"
-                style={{ color: '#fff', caretColor: '#fff', WebkitTextFillColor: '#fff' }}
-                className="w-full px-4 py-3 rounded-xl border border-white/20 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-colors"
+                style={{
+                  color: '#fff',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  caretColor: '#fff',
+                  WebkitTextFillColor: '#fff',
+                }}
+                className="w-full px-4 py-3 rounded-xl border border-white/20 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-colors"
               />
             </div>
 
             {/* Password */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wide">
                 Mật khẩu
               </label>
               <div className="relative">
@@ -101,13 +106,18 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  style={{ color: '#fff', caretColor: '#fff', WebkitTextFillColor: '#fff', background: 'rgba(255,255,255,0.05)' }}
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-white/20 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-colors"
+                  style={{
+                    color: '#fff',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    caretColor: '#fff',
+                    WebkitTextFillColor: '#fff',
+                  }}
+                  className="w-full px-4 py-3 pr-12 rounded-xl border border-white/20 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-200 transition-colors"
                 >
                   {showPw ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,7 +164,7 @@ function LoginForm() {
           </form>
         </div>
 
-        <p className="text-center text-xs text-slate-600 mt-6">
+        <p className="text-center text-xs text-slate-400 mt-6">
           AIZEN Education © {new Date().getFullYear()} — Admin Portal
         </p>
       </div>
