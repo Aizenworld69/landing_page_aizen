@@ -136,7 +136,7 @@ export class RegistrationsService {
 
     let query = this.supabase
       .from('registrations')
-      .select('id, full_name, phone, email, company, position, referral, plan, created_at, course_id, courses(title)', { count: 'exact' })
+      .select('id, full_name, phone, email, company, position, referral, plan, created_at, course_id, courses(title, price, price_group)', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(from, to);
 

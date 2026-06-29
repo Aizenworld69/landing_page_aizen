@@ -8,11 +8,11 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('Registrations')
 @Controller('registrations')
-@Throttle({ default: { limit: 5, ttl: 60000 } })
 export class RegistrationsController {
   constructor(private readonly registrationsService: RegistrationsService) {}
 
   @Post()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Dang ky ca nhan (khong can login)' })
   create(@Body() dto: CreateRegistrationDto) {
@@ -20,6 +20,7 @@ export class RegistrationsController {
   }
 
   @Post('group')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Dang ky nhom 2 nguoi (khong can login)' })
   createGroup(@Body() dto: CreateGroupRegistrationDto) {

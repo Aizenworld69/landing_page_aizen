@@ -11,8 +11,10 @@ let jwksClient: ReturnType<typeof createRemoteJWKSet> | null = null;
 function getJWKSClient(supabaseUrl: string) {
   if (!jwksClient) {
     const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    console.log('MIDDLEWARE SUPABASE URL:', supabaseUrl);
+    console.log('MIDDLEWARE ANON KEY:', anonKey ? anonKey.substring(0, 10) + '...' : 'UNDEFINED');
     jwksClient = createRemoteJWKSet(
-      new URL(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/jwks`),
+      new URL(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/.well-known/jwks.json`),
       {
         headers: anonKey ? { apikey: anonKey } : undefined,
       }
@@ -59,7 +61,7 @@ export async function middleware(req: NextRequest) {
           const payload = await verifyToken(adminToken.value);
           const role = (payload.app_metadata as { role?: string })?.role || payload.role;
           if (role === 'admin') {
-            return NextResponse.redirect(new URL('/admin/tong-quan', req.url));
+            return NextResponse.redirect(new URL('/admin/dang-ky', req.url));
           }
         } catch (err) {
           console.error('Login redirect loop check error:', err);

@@ -1,4 +1,4 @@
-﻿import { getAdminToken } from './auth';
+import { getAdminToken } from './auth';
 
 const BASE = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api').replace(/\/$/, '');
 
@@ -91,7 +91,7 @@ export interface Registration {
   plan: string;
   created_at: string;
   course_id: string;
-  courses?: { title: string } | null;
+  courses?: { title: string; price?: number; price_group?: number } | null;
 }
 
 export interface RegistrationsPage {

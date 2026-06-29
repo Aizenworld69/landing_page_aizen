@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { adminLogin } from '@/lib/admin/api';
 import { setAdminSession, isAdminLoggedIn } from '@/lib/admin/auth';
 
@@ -16,7 +17,7 @@ function LoginForm() {
 
   useEffect(() => {
     if (isAdminLoggedIn()) {
-      router.replace('/admin/tong-quan');
+      router.replace('/admin/dang-ky');
     }
   }, [router]);
 
@@ -36,7 +37,7 @@ function LoginForm() {
         email: user.email ?? loginEmail,
         fullName: user.fullName,
       });
-      const redirect = searchParams.get('redirect') ?? '/admin/tong-quan';
+      const redirect = searchParams.get('redirect') ?? '/admin/dang-ky';
       router.replace(redirect);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Đăng nhập thất bại');
@@ -56,13 +57,16 @@ function LoginForm() {
       <div className="w-full max-w-md px-4">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 mb-4 shadow-sm">
-            <svg className="w-7 h-7 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-            </svg>
+          <div className="inline-flex items-center justify-center mb-4">
+            <Image
+              src="/logo.png"
+              alt="AIZEN Education"
+              width={140}
+              height={42}
+              className="object-contain h-10 w-auto"
+              priority
+            />
           </div>
-          <h1 className="text-2xl font-black text-slate-800">AIZEN Admin</h1>
           <p className="text-slate-500 text-sm mt-1">Đăng nhập để quản lý hệ thống</p>
         </div>
 
