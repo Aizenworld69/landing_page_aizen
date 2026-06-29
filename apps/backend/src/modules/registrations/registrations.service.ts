@@ -143,6 +143,67 @@ export class RegistrationsService {
     };
   }
 
+
+  // ─────────────────────────────────────────────
+  // Admin: list registrations
+  // ─────────────────────────────────────────────
+  async findAll(params: { page: number; limit: number; search?: string; courseId?: string }) {
+    const { page, limit, search, courseId } = params;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    let query = this.supabase
+      .from('registrations')
+      .select('id, full_name, phone, email, company, position, referral, plan, created_at, course_id, courses(title)', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (search) {
+      query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
+    }
+    if (courseId) {
+      query = query.eq('course_id', courseId);
+    }
+
+    const { data, error, count } = await query;
+    if (error) throw new BadRequestException('Lỗi khi truy vấn dữ liệu');
+
+    return {
+      data,
+      total: count ?? 0,
+      page,
+      limit,
+      totalPages: Math.ceil((count ?? 0) / limit),
+    };
+  }
+
+  // ─────────────────────────────────────────────
+  // Admin: stats
+  // ─────────────────────────────────────────────
+  async getStats() {
+    const [totalRes, todayRes, courseRes] = await Promise.all([
+      this.supabase.from('registrations').select('id', { count: 'exact', head: true }),
+      this.supabase.from('registrations').select('id', { count: 'exact', head: true })
+        .gte('created_at', new Date(new Date().toDateString()).toISOString()),
+      this.supabase.from('registrations').select('course_id, courses(title)', { count: 'exact' }),
+    ]);
+
+    // Group by course
+    const byCoursMap: Record<string, { courseId: string; title: string; count: number }> = {};
+    for (const row of (courseRes.data ?? []) as unknown as Array<{ course_id: string; courses: { title: string } | null }>) {
+      const id = row.course_id;
+      if (!byCoursMap[id]) {
+        byCoursMap[id] = { courseId: id, title: row.courses?.title ?? id, count: 0 };
+      }
+      byCoursMap[id]!.count++;
+    }
+
+    return {
+      total: totalRes.count ?? 0,
+      today: todayRes.count ?? 0,
+      byCourse: Object.values(byCoursMap).sort((a, b) => b.count - a.count),
+    };
+  }
   // ─────────────────────────────────────────────
   // Private helpers
   // ─────────────────────────────────────────────
@@ -234,8 +295,13 @@ export class RegistrationsService {
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-      body,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        msg_type: 'text',
+        content: {
+          text: body,
+        },
+      }),
     });
 
     if (!response.ok) {

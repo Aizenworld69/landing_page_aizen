@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { apiClient } from '@/lib/api/api-client';
+import { setUserSession } from '@/lib/auth';
 
 interface LoginForm {
   email: string;
@@ -26,11 +27,11 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const { data } = await apiClient.post<{ data: { access_token: string } }>(
+      const { data } = await apiClient.post<{ data: { accessToken: string; user: any } }>(
         '/auth/login',
         form,
       );
-      localStorage.setItem('access_token', data.data.access_token);
+      setUserSession(data.data.accessToken, data.data.user);
       router.push('/my-courses');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Đăng nhập thất bại.');

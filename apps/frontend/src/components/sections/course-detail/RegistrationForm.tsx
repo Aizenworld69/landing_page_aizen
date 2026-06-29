@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { Input } from '@/components/ui/Input';
@@ -65,7 +65,7 @@ function PlanCard({
       className={`relative w-full text-left rounded-xl border-2 px-4 py-3.5 transition-all duration-200 ${
         selected
           ? 'border-sky-400 bg-sky-500/15 shadow-md shadow-sky-500/20'
-          : 'border-white/10 bg-white/5 hover:border-sky-500/40 hover:bg-white/8'
+          : 'border-white/10 bg-white/5 hover:border-sky-500/40 hover:bg-white/10'
       }`}
     >
       {plan.badge && (
@@ -153,7 +153,8 @@ function DarkInput({ label, error, id, required, ...props }: DarkInputProps) {
       <input
         id={id}
         {...props}
-        className={`w-full px-3.5 py-2.5 rounded-lg border bg-white/8 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60 focus:border-sky-500/60 transition-colors ${
+        style={{ color: '#ffffff', caretColor: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+        className={`w-full px-3.5 py-2.5 rounded-lg border bg-slate-700/60 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60 focus:border-sky-500/60 transition-colors ${
           error ? 'border-red-400/60' : 'border-white/15 hover:border-white/25'
         }`}
       />
@@ -186,6 +187,10 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 
 // ─── Main Component ───────────────────────────────────
 export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFormProps) {
+  const group4Total = courseId === '9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f' || price === 1300000
+    ? 3800000
+    : Math.round((priceGroup - 150000) * 4);
+
   const PLANS: PlanConfig[] = [
     {
       key: 'early_bird', label: 'Early Bird', sublabel: '1 người · Ưu đãi có hạn',
@@ -200,8 +205,8 @@ export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFo
       memberCount: 1,
     },
     {
-      key: 'group_2', label: 'Nhóm 2 người', sublabel: `${formatCurrency(Math.round(priceGroup / 2))}/người`,
-      priceLabel: formatCurrency(priceGroup),
+      key: 'group_2', label: 'Nhóm 2 người', sublabel: `${formatCurrency(priceGroup)}/người`,
+      priceLabel: formatCurrency(priceGroup * 2),
       originalPriceLabel: formatCurrency(price * 2),
       memberCount: 2,
       badge: { text: 'HOT NHẤT', color: 'bg-sky-500' },
@@ -313,9 +318,9 @@ export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFo
     );
   }
 
-  // ── Form ──────────────────────────────────────────────
   return (
-    <div className="bg-gradient-to-b from-slate-800/90 to-slate-900/90 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-sm sticky top-20 shadow-2xl shadow-black/30">
+    <div className="relative border border-white/10 rounded-2xl overflow-hidden backdrop-blur-sm sticky top-20 shadow-2xl shadow-black/30"
+      style={{ backgroundImage: "linear-gradient(180deg, rgba(15,30,53,0.85) 0%, rgba(11,22,40,0.9) 100%), url('/backgoundTrangkhoahoc.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
       {/* Header */}
       <div className="text-center pt-5 pb-4 px-6 border-b border-white/8">
         <p className="text-sky-400 text-[10px] font-bold uppercase tracking-widest mb-1">ĐĂNG KÝ</p>
@@ -360,7 +365,8 @@ export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFo
             <div className="relative">
               <select id="referral" value={referral}
                 onChange={(e) => { setReferral(e.target.value); setReferralError(undefined); }}
-                className={`w-full appearance-none px-4 py-2.5 pr-10 border rounded-lg text-sm bg-white/8 focus:outline-none focus:ring-2 focus:ring-sky-500/60 transition-colors ${
+                style={{ color: referral === '' ? 'rgb(100,116,139)' : '#ffffff' }}
+                className={`w-full appearance-none px-4 py-2.5 pr-10 border rounded-lg text-sm bg-slate-700/60 focus:outline-none focus:ring-2 focus:ring-sky-500/60 transition-colors ${
                   referralError ? 'border-red-400/60' : 'border-white/15 hover:border-white/25'
                 } ${referral === '' ? 'text-slate-500' : 'text-white'}`}
               >

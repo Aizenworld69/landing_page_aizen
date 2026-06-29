@@ -1,4 +1,5 @@
-﻿import axios, { type AxiosError, type AxiosInstance } from 'axios';
+import axios, { type AxiosError, type AxiosInstance } from 'axios';
+import { getUserToken } from '../auth';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
 
@@ -12,7 +13,7 @@ function createApiClient(): AxiosInstance {
   // Attach auth token from localStorage if present
   instance.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('access_token');
+      const token = getUserToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }

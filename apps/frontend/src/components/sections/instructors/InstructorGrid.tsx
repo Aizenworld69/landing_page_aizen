@@ -1,4 +1,4 @@
-﻿import Image from 'next/image';
+import Image from 'next/image';
 import { FadeIn, StaggerChildren } from '@/components/ui/AnimationWrapper';
 import type { Instructor } from '@aizen/types';
 
@@ -19,26 +19,26 @@ export function InstructorGrid({ instructors }: InstructorGridProps) {
           </h2>
         </FadeIn>
 
-        <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" stagger={130}>
+        <StaggerChildren className="flex flex-wrap justify-center gap-8" stagger={130}>
           {instructors.map((instructor) => (
             <div
               key={instructor.id}
-              className="card-hover bg-[#F8FAFC] border border-gray-100 rounded-2xl p-6 flex flex-col items-center text-center group"
+              className="card-hover bg-[#F8FAFC] border border-gray-100 rounded-2xl p-8 flex flex-col items-center text-center group w-full max-w-[380px]"
             >
               {/* Avatar */}
-              <div className="mb-4 relative">
+              <div className="mb-6 relative size-44 md:size-48">
                 <div className="absolute inset-0 rounded-full bg-sky-200/50 scale-0 group-hover:scale-110 transition-transform duration-500 blur-md" />
                 {instructor.avatar_url ? (
                   <Image
                     src={instructor.avatar_url}
                     alt={instructor.name}
-                    width={96}
-                    height={96}
-                    className="relative rounded-full object-cover border-4 border-white shadow group-hover:scale-105 transition-transform duration-300"
+                    width={192}
+                    height={192}
+                    className="relative rounded-full object-cover border-4 border-white shadow-md group-hover:scale-105 transition-transform duration-300 size-44 md:size-48"
                   />
                 ) : (
-                  <div className="relative w-24 h-24 rounded-full bg-sky-100 flex items-center justify-center border-4 border-white shadow group-hover:scale-105 transition-transform duration-300">
-                    <span className="text-4xl">👤</span>
+                  <div className="relative w-full h-full rounded-full bg-sky-100 flex items-center justify-center border-4 border-white shadow-md group-hover:scale-105 transition-transform duration-300">
+                    <span className="text-6xl">👤</span>
                   </div>
                 )}
               </div>

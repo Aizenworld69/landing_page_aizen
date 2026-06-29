@@ -1,4 +1,4 @@
-﻿import {
+import {
   ArgumentsHost,
   Catch,
   ExceptionFilter,
@@ -16,22 +16,34 @@ interface ErrorResponse {
   path: string;
 }
 
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: HttpException, host: ArgumentsHost): void {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const status = exception.getStatus();
-    const exceptionResponse = exception.getResponse();
 
-    const message =
-      typeof exceptionResponse === 'object' &&
-      'message' in (exceptionResponse as object)
-        ? (exceptionResponse as { message: string | string[] }).message
-        : exception.message;
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let message: string | string[] = 'Internal server error';
+
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
+      const exceptionResponse = exception.getResponse();
+      message =
+        typeof exceptionResponse === 'object' &&
+        'message' in (exceptionResponse as object)
+          ? (exceptionResponse as { message: string | string[] }).message
+          : exception.message;
+    } else if (exception instanceof Error) {
+      message = exception.message;
+      const err = exception as any;
+      if (err.code) {
+        this.logger.error(`Database error [${err.code}]: ${err.message}`, err.stack);
+        status = HttpStatus.BAD_REQUEST;
+      }
+    }
 
     const body: ErrorResponse = {
       success: false,
@@ -42,7 +54,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     };
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
-      this.logger.error(`${request.method} ${request.url}`, exception.stack);
+      this.logger.error(
+        `${request.method} ${request.url}`,
+        exception instanceof Error ? exception.stack : String(exception),
+      );
     }
 
     response.status(status).json(body);

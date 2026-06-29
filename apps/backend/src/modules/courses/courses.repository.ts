@@ -1,7 +1,9 @@
-﻿import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_CLIENT } from '../../database/supabase.module';
 import type { QueryCourseDto } from './dto/query-course.dto';
+import type { CreateCourseDto } from './dto/create-course.dto';
+import type { UpdateCourseDto } from './dto/update-course.dto';
 import type { Course, CourseWithDetails } from './entities/course.entity';
 
 @Injectable()
@@ -76,6 +78,53 @@ export class CoursesRepository {
 
     if (error) {
       if (error.code === 'PGRST116') return null;
+      throw error;
+    }
+
+    return data as Course;
+  }
+
+  async create(dto: CreateCourseDto): Promise<Course> {
+    const { data, error } = await this.supabase
+      .from('courses')
+      .insert([dto])
+      .select()
+      .single();
+
+    if (error) {
+      this.logger.error('create course failed', error);
+      throw error;
+    }
+
+    return data as Course;
+  }
+
+  async update(id: string, dto: UpdateCourseDto): Promise<Course> {
+    const { data, error } = await this.supabase
+      .from('courses')
+      .update(dto)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      this.logger.error(`update course ${id} failed`, error);
+      throw error;
+    }
+
+    return data as Course;
+  }
+
+  async delete(id: string): Promise<Course> {
+    const { data, error } = await this.supabase
+      .from('courses')
+      .delete()
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      this.logger.error(`delete course ${id} failed`, error);
       throw error;
     }
 

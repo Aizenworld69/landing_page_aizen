@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { motion } from 'framer-motion';
 
@@ -100,7 +100,8 @@ function DarkInput({ label, error, id, required, ...props }: DarkInputProps) {
         {label}{required && <span className="text-red-400 ml-0.5">*</span>}
       </label>
       <input id={id} {...props}
-        className={`w-full px-3 py-2 rounded-lg border bg-white/8 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60 transition-colors ${
+        style={{ color: '#ffffff', caretColor: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+        className={`w-full px-3 py-2 rounded-lg border bg-slate-700/60 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60 transition-colors ${
           error ? 'border-red-400/60' : 'border-white/15 hover:border-white/25'
         }`} />
       {error && <p className="text-xs text-red-400 mt-0.5">{error}</p>}
@@ -127,7 +128,8 @@ function DarkSelect({ id, label, value, options, placeholder = 'Chọn...', requ
       </label>
       <div className="relative">
         <select id={id} value={value} onChange={(e) => onChange(e.target.value)}
-          className={`w-full appearance-none px-3 py-2 pr-8 border rounded-lg bg-white/8 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/60 transition-colors ${
+          style={{ color: value === '' ? 'rgb(100,116,139)' : '#ffffff' }}
+          className={`w-full appearance-none px-3 py-2 pr-8 border rounded-lg bg-slate-700/60 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/60 transition-colors ${
             error ? 'border-red-400/60' : 'border-white/15 hover:border-white/25'
           } ${value === '' ? 'text-slate-500' : 'text-white'}`}>
           <option value="" disabled className="bg-slate-900">{placeholder}</option>
@@ -243,7 +245,7 @@ function RegistrationModal({ plan, courseId, courseTitle, onClose }: Registratio
     >
       {/* Modal */}
       <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl overflow-hidden shadow-2xl"
-        style={{ background: 'linear-gradient(180deg, #0F1E35 0%, #0B1628 100%)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        style={{ backgroundImage: "linear-gradient(180deg, rgba(15,30,53,0.75) 0%, rgba(11,22,40,0.8) 100%), url('/backgoundTrangkhoahoc.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
 
         {/* Header */}
         <div className="flex-shrink-0 px-6 pt-5 pb-4 border-b border-white/8">
@@ -490,7 +492,6 @@ function PlanCard({ plan, onClick }: PlanCardProps) {
             }}
           >
             {formatCurrency(plan.totalPrice)}
-            <span className="text-sm font-normal text-slate-500">đ</span>
           </p>
 
           {isEarlyBird ? (
@@ -525,7 +526,9 @@ function PlanCard({ plan, onClick }: PlanCardProps) {
 // ─── Main Section ─────────────────────────────────────
 export function CoursePlanSection({ courseId, courseTitle, price, priceGroup }: CoursePlanSectionProps) {
   const earlyBirdPrice = Math.round(price * 0.73);
-  const group4Total = Math.round(priceGroup * 1.8);
+  const group4Total = courseId === '9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f' || price === 1300000
+    ? 3800000
+    : Math.round((priceGroup - 150000) * 4);
 
   const PLANS: PlanConfig[] = [
     {
@@ -571,7 +574,7 @@ export function CoursePlanSection({ courseId, courseTitle, price, priceGroup }: 
       totalPrice: group4Total,
       originalTotal: price * 4,
       memberCount: 4,
-      badge: { text: 'TIẾT KIỆM 24%', color: 'bg-emerald-500' },
+      badge: { text: `TIẾT KIỆM ${Math.round(((price * 4 - group4Total) / (price * 4)) * 100)}%`, color: 'bg-emerald-500' },
       icon: <IconUsers className="w-5 h-5 text-emerald-400" />,
       buttonLabel: 'Đăng ký nhóm',
     },
