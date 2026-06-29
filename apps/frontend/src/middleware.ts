@@ -1,10 +1,43 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
+import { jwtVerify, createRemoteJWKSet } from 'jose';
 
 const USER_PROTECTED = ['/my-courses'];
 const ADMIN_PROTECTED = ['/admin'];
 const ADMIN_PUBLIC = ['/admin/dangnhap'];
+
+let jwksClient: ReturnType<typeof createRemoteJWKSet> | null = null;
+
+function getJWKSClient(supabaseUrl: string) {
+  if (!jwksClient) {
+    jwksClient = createRemoteJWKSet(new URL(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/jwks`));
+  }
+  return jwksClient;
+}
+
+async function verifyToken(token: string) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  
+  // 1. Thử xác thực qua JWKS (Bắt buộc cho thuật toán ES256 của Supabase mới)
+  if (supabaseUrl) {
+    try {
+      const JWKS = getJWKSClient(supabaseUrl);
+      const { payload } = await jwtVerify(token, JWKS);
+      return payload;
+    } catch (err) {
+      console.warn('JWKS verification failed, falling back to JWT_SECRET:', err);
+    }
+  }
+
+  // 2. Fallback về xác thực đối xứng bằng JWT_SECRET (dùng cho HS256/Local dev)
+  const secretStr = process.env.JWT_SECRET;
+  if (!secretStr) {
+    throw new Error('Neither JWKS nor JWT_SECRET is configured');
+  }
+  const secret = new TextEncoder().encode(secretStr);
+  const { payload } = await jwtVerify(token, secret);
+  return payload;
+}
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -17,14 +50,10 @@ export async function middleware(req: NextRequest) {
     if (ADMIN_PUBLIC.some((p) => pathname.startsWith(p))) {
       if (adminToken?.value) {
         try {
-          const secretStr = process.env.JWT_SECRET;
-          if (secretStr) {
-            const secret = new TextEncoder().encode(secretStr);
-            const { payload } = await jwtVerify(adminToken.value, secret);
-            const role = (payload.app_metadata as { role?: string })?.role || payload.role;
-            if (role === 'admin') {
-              return NextResponse.redirect(new URL('/admin/tong-quan', req.url));
-            }
+          const payload = await verifyToken(adminToken.value);
+          const role = (payload.app_metadata as { role?: string })?.role || payload.role;
+          if (role === 'admin') {
+            return NextResponse.redirect(new URL('/admin/tong-quan', req.url));
           }
         } catch (err) {
           console.error('Login redirect loop check error:', err);
@@ -40,14 +69,9 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Verify token using jose
+    // Verify token using verifyToken helper
     try {
-      const secretStr = process.env.JWT_SECRET;
-      if (!secretStr) {
-        throw new Error('JWT_SECRET is not configured');
-      }
-      const secret = new TextEncoder().encode(secretStr);
-      const { payload } = await jwtVerify(adminToken.value, secret);
+      const payload = await verifyToken(adminToken.value);
       const role = (payload.app_metadata as { role?: string })?.role || payload.role;
       if (role !== 'admin') {
         throw new Error(`Not admin. Role is ${role}`);
