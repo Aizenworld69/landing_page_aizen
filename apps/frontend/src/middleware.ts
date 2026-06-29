@@ -26,7 +26,8 @@ export async function middleware(req: NextRequest) {
               return NextResponse.redirect(new URL('/admin/tong-quan', req.url));
             }
           }
-        } catch {
+        } catch (err) {
+          console.error('Login redirect loop check error:', err);
           // Token is invalid, let user access login page
         }
       }
@@ -49,9 +50,10 @@ export async function middleware(req: NextRequest) {
       const { payload } = await jwtVerify(adminToken.value, secret);
       const role = (payload.app_metadata as { role?: string })?.role || payload.role;
       if (role !== 'admin') {
-        throw new Error('Not admin');
+        throw new Error(`Not admin. Role is ${role}`);
       }
-    } catch {
+    } catch (err) {
+      console.error('Admin token verification error:', err);
       const url = new URL('/admin/dangnhap', req.url);
       url.searchParams.set('redirect', pathname);
       const response = NextResponse.redirect(url);
