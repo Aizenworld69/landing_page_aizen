@@ -47,35 +47,32 @@ function LoginForm() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-[#0a0f1e]"
+      className="min-h-screen flex items-center justify-center bg-slate-50"
       style={{
         backgroundImage:
-          'radial-gradient(ellipse at 20% 40%, rgba(14,165,233,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 60%, rgba(99,102,241,0.06) 0%, transparent 60%)',
+          'radial-gradient(ellipse at 20% 40%, rgba(14,165,233,0.06) 0%, transparent 60%), radial-gradient(ellipse at 80% 60%, rgba(99,102,241,0.04) 0%, transparent 60%)',
       }}
     >
       <div className="w-full max-w-md px-4">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/20 border border-sky-500/30 mb-4">
-            <svg className="w-7 h-7 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 mb-4 shadow-sm">
+            <svg className="w-7 h-7 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-black text-white">AIZEN Admin</h1>
-          <p className="text-slate-300 text-sm mt-1">Đăng nhập để quản lý hệ thống</p>
+          <h1 className="text-2xl font-black text-slate-800">AIZEN Admin</h1>
+          <p className="text-slate-500 text-sm mt-1">Đăng nhập để quản lý hệ thống</p>
         </div>
 
         {/* Card */}
-        <div
-          className="rounded-2xl border border-white/10 p-8"
-          style={{ background: 'rgba(15,28,48,0.9)' }}
-        >
+        <div className="rounded-2xl border border-slate-100 bg-white p-8 shadow-xl shadow-slate-200/50">
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
             {/* Email */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wide">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Tài khoản hoặc Email
               </label>
               <input
@@ -84,19 +81,13 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="aizen hoặc admin@aizen.edu.vn"
-                style={{
-                  color: '#fff',
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  caretColor: '#fff',
-                  WebkitTextFillColor: '#fff',
-                }}
-                className="w-full px-4 py-3 rounded-xl border border-white/20 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-colors"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all"
               />
             </div>
 
             {/* Password */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wide">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Mật khẩu
               </label>
               <div className="relative">
@@ -106,18 +97,12 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  style={{
-                    color: '#fff',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    caretColor: '#fff',
-                    WebkitTextFillColor: '#fff',
-                  }}
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-white/20 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-colors"
+                  className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-200 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
                 >
                   {showPw ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,11 +120,11 @@ function LoginForm() {
 
             {/* Error */}
             {error && (
-              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30">
-                <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-red-50 border border-red-100">
+                <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                 </svg>
-                <p className="text-sm text-red-400">{error}</p>
+                <p className="text-sm text-red-600 font-medium">{error}</p>
               </div>
             )}
 
@@ -147,7 +132,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 active:bg-sky-600 text-white font-bold text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2 mt-1"
+              className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white font-bold text-sm transition-all disabled:opacity-60 flex items-center justify-center gap-2 mt-1 shadow-md shadow-sky-500/10"
             >
               {loading ? (
                 <>
@@ -174,7 +159,7 @@ function LoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0a0f1e]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
       <LoginForm />
     </Suspense>
   );
