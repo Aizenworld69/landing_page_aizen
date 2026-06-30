@@ -16,6 +16,11 @@ export interface Course {
   instructor_id: string;
   skills?: { title: string; description: string; badge?: string }[];
   curriculum_headline?: string | null;
+  qr_early_bird?: string | null;
+  qr_individual?: string | null;
+  qr_group_2?: string | null;
+  qr_group_4?: string | null;
+  plans_config?: any;
   created_at: string;
 }
 

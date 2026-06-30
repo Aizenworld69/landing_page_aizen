@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { motion } from 'framer-motion';
 
@@ -12,6 +12,11 @@ interface CoursePlanSectionProps {
   courseTitle: string;
   price: number;
   priceGroup: number;
+  qrEarlyBird?: string;
+  qrIndividual?: string;
+  qrGroup2?: string;
+  qrGroup4?: string;
+  plansConfig?: any;
 }
 
 type PlanKey = 'early_bird' | 'individual' | 'group_2' | 'group_4';
@@ -151,10 +156,11 @@ interface RegistrationModalProps {
   plan: PlanConfig;
   courseId: string;
   courseTitle: string;
+  qrCodeUrl?: string;
   onClose: () => void;
 }
 
-function RegistrationModal({ plan, courseId, courseTitle, onClose }: RegistrationModalProps) {
+function RegistrationModal({ plan, courseId, courseTitle, qrCodeUrl, onClose }: RegistrationModalProps) {
   const [members, setMembers] = useState<MemberForm[]>(
     Array.from({ length: plan.memberCount }, emptyMember),
   );
@@ -272,13 +278,29 @@ function RegistrationModal({ plan, courseId, courseTitle, onClose }: Registratio
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
           {success ? (
-            <div className="text-center py-10">
-              <p className="text-5xl mb-4">🎉</p>
-              <p className="text-white font-bold text-lg mb-2">Đăng ký thành công!</p>
-              <p className="text-slate-300 text-sm mb-1">Chúng tôi sẽ liên hệ với bạn trong 24h.</p>
+            <div className="text-center py-6 flex flex-col items-center">
+              <p className="text-5xl mb-3">🎉</p>
+              <p className="text-white font-bold text-lg mb-1">Đăng ký thành công!</p>
+              <p className="text-slate-300 text-sm mb-4">Vui lòng quét mã QR dưới đây để hoàn tất thanh toán học phí:</p>
+              
+              {qrCodeUrl ? (
+                <div className="bg-white p-3 rounded-2xl border border-white/10 shadow-lg max-w-[240px] w-full aspect-square flex items-center justify-center mb-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={qrCodeUrl}
+                    alt="Mã QR Thanh toán"
+                    className="w-full h-full object-contain rounded-xl"
+                  />
+                </div>
+              ) : (
+                <p className="text-slate-400 text-xs mb-4 italic">Không có hình ảnh QR thanh toán nào được thiết lập. Ban hỗ trợ sẽ liên hệ với bạn trong 24h.</p>
+              )}
+
+              <p className="text-sky-400 text-xs font-semibold mb-6">Chúng tôi sẽ xác nhận đăng ký và liên hệ với bạn qua SĐT/Email trong 24h.</p>
+
               <button onClick={onClose}
-                className="mt-6 px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition-colors">
-                Đóng
+                className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition-colors cursor-pointer">
+                Xác nhận & Đóng
               </button>
             </div>
           ) : (
@@ -524,17 +546,42 @@ function PlanCard({ plan, onClick }: PlanCardProps) {
 }
 
 // ─── Main Section ─────────────────────────────────────
-export function CoursePlanSection({ courseId, courseTitle, price, priceGroup }: CoursePlanSectionProps) {
-  const earlyBirdPrice = Math.round(price * 0.73);
-  const group4Total = courseId === '9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f' || price === 1300000
-    ? 3800000
-    : Math.round((priceGroup - 150000) * 4);
+export function CoursePlanSection({
+  courseId,
+  courseTitle,
+  price,
+  priceGroup,
+  qrEarlyBird,
+  qrIndividual,
+  qrGroup2,
+  qrGroup4,
+  plansConfig,
+}: CoursePlanSectionProps) {
+  const earlyBirdPrice = plansConfig?.early_bird?.price ?? Math.round(price * 0.73);
+  const earlyBirdLabel = plansConfig?.early_bird?.label || 'Early Bird';
+  const earlyBirdSublabel = plansConfig?.early_bird?.sublabel || '1 người · Ưu đãi có hạn';
+
+  const individualPrice = plansConfig?.individual?.price ?? price;
+  const individualLabel = plansConfig?.individual?.label || '1 người';
+  const individualSublabel = plansConfig?.individual?.sublabel || 'Đăng ký cá nhân';
+
+  const group2PricePerPerson = plansConfig?.group_2?.price ?? priceGroup;
+  const group2Label = plansConfig?.group_2?.label || 'Nhóm 2 người';
+  const group2Sublabel = plansConfig?.group_2?.sublabel || `${formatCurrency(group2PricePerPerson)}/người`;
+
+  const group4Total = plansConfig?.group_4?.price ?? (
+    courseId === '9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f' || price === 1300000
+      ? 3800000
+      : Math.round((priceGroup - 150000) * 4)
+  );
+  const group4Label = plansConfig?.group_4?.label || 'Nhóm 4 người';
+  const group4Sublabel = plansConfig?.group_4?.sublabel || `${formatCurrency(Math.round(group4Total / 4))}/người`;
 
   const PLANS: PlanConfig[] = [
     {
       key: 'early_bird',
-      label: 'Early Bird',
-      sublabel: '1 người · Ưu đãi có hạn',
+      label: earlyBirdLabel,
+      sublabel: earlyBirdSublabel,
       pricePerPerson: earlyBirdPrice,
       totalPrice: earlyBirdPrice,
       originalTotal: price,
@@ -545,10 +592,10 @@ export function CoursePlanSection({ courseId, courseTitle, price, priceGroup }: 
     },
     {
       key: 'individual',
-      label: '1 người',
-      sublabel: 'Đăng ký cá nhân',
-      pricePerPerson: price,
-      totalPrice: price,
+      label: individualLabel,
+      sublabel: individualSublabel,
+      pricePerPerson: individualPrice,
+      totalPrice: individualPrice,
       originalTotal: price,
       memberCount: 1,
       icon: <IconUser className="w-5 h-5 text-sky-400" />,
@@ -556,10 +603,10 @@ export function CoursePlanSection({ courseId, courseTitle, price, priceGroup }: 
     },
     {
       key: 'group_2',
-      label: 'Nhóm 2 người',
-      sublabel: `${formatCurrency(priceGroup)}/người`,
-      pricePerPerson: priceGroup,
-      totalPrice: priceGroup * 2,
+      label: group2Label,
+      sublabel: group2Sublabel,
+      pricePerPerson: group2PricePerPerson,
+      totalPrice: group2PricePerPerson * 2,
       originalTotal: price * 2,
       memberCount: 2,
       badge: { text: 'HOT NHẤT', color: 'bg-sky-500' },
@@ -568,8 +615,8 @@ export function CoursePlanSection({ courseId, courseTitle, price, priceGroup }: 
     },
     {
       key: 'group_4',
-      label: 'Nhóm 4 người',
-      sublabel: `${formatCurrency(Math.round(group4Total / 4))}/người`,
+      label: group4Label,
+      sublabel: group4Sublabel,
       pricePerPerson: Math.round(group4Total / 4),
       totalPrice: group4Total,
       originalTotal: price * 4,
@@ -628,6 +675,15 @@ export function CoursePlanSection({ courseId, courseTitle, price, priceGroup }: 
           plan={activePlan}
           courseId={courseId}
           courseTitle={courseTitle}
+          qrCodeUrl={
+            activePlan.key === 'early_bird'
+              ? qrEarlyBird
+              : activePlan.key === 'individual'
+              ? qrIndividual
+              : activePlan.key === 'group_2'
+              ? qrGroup2
+              : qrGroup4
+          }
           onClose={() => setActivePlan(null)}
         />
       )}

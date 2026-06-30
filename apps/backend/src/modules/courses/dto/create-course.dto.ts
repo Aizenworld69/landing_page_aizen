@@ -1,4 +1,5 @@
-﻿import {
+import {
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -6,9 +7,27 @@
   IsString,
   IsUUID,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class CourseSkillDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  description: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  badge?: string;
+}
 
 export class CreateCourseDto {
   @ApiProperty()
@@ -59,4 +78,40 @@ export class CreateCourseDto {
   @ApiProperty()
   @IsUUID()
   instructor_id: string;
+
+  @ApiPropertyOptional({ type: [CourseSkillDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CourseSkillDto)
+  skills?: CourseSkillDto[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  curriculum_headline?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  qr_early_bird?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  qr_individual?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  qr_group_2?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  qr_group_4?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  plans_config?: any;
 }

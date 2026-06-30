@@ -2,14 +2,19 @@
   "name": "aizen-education",
   "private": true,
   "packageManager": "npm@11.5.1",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "concurrently \"npm run dev -w @aizen/frontend\" \"npm run dev -w @aizen/backend\"",
+    "dev:turbo": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test"
   },
   "devDependencies": {
+    "concurrently": "^10.0.3",
     "turbo": "^2.0.0",
     "typescript": "^5.4.0"
   },

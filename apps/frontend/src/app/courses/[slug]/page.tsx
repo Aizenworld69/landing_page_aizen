@@ -89,6 +89,11 @@ export default async function CourseDetailPage({
             courseTitle={course.title}
             price={course.price}
             priceGroup={course.price_group}
+            qrEarlyBird={course.qr_early_bird ?? undefined}
+            qrIndividual={course.qr_individual ?? undefined}
+            qrGroup2={course.qr_group_2 ?? undefined}
+            qrGroup4={course.qr_group_4 ?? undefined}
+            plansConfig={course.plans_config ?? undefined}
           />
         </div>
       </main>

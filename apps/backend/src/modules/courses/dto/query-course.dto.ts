@@ -3,6 +3,12 @@ import { Transform, Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class QueryCourseDto {
+  @ApiPropertyOptional({ description: 'Tim kiem theo tieu de khoa hoc' })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }: { value: string }) => value.trim())
+  search?: string;
+
   @ApiPropertyOptional({ enum: ['upcoming', 'completed'] })
   @IsOptional()
   @IsEnum(['upcoming', 'completed'])

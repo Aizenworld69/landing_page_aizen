@@ -125,3 +125,156 @@ export interface AdminStats {
 export async function getAdminStats(): Promise<AdminStats> {
   return adminFetch<AdminStats>('/registrations/stats');
 }
+
+// ── Courses ───────────────────────────────────────────
+export type CourseStatus = 'upcoming' | 'completed';
+
+export interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  thumbnail_url: string | null;
+  status: CourseStatus;
+  category: string;
+  start_date: string | null;
+  price: number;
+  price_group: number;
+  instructor_id: string;
+  curriculum_headline?: string | null;
+  skills?: { title: string; description: string; badge?: string }[];
+  qr_early_bird?: string | null;
+  qr_individual?: string | null;
+  qr_group_2?: string | null;
+  qr_group_4?: string | null;
+  plans_config?: any;
+  created_at: string;
+  instructors?: { id: string; name: string } | null;
+}
+
+export interface CoursesPage {
+  items: Course[];
+  pagination: { total: number; page: number; limit: number; totalPages: number };
+}
+
+export interface CourseFormInput {
+  title: string;
+  slug: string;
+  description: string;
+  thumbnail_url?: string;
+  status: CourseStatus;
+  category: string;
+  start_date?: string;
+  price: number;
+  price_group: number;
+  instructor_id: string;
+  skills?: { title: string; description: string; badge?: string }[];
+  curriculum_headline?: string;
+  qr_early_bird?: string;
+  qr_individual?: string;
+  qr_group_2?: string;
+  qr_group_4?: string;
+  plans_config?: any;
+}
+
+export async function getCourses(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: CourseStatus | 'all';
+  category?: string;
+}): Promise<CoursesPage> {
+  const q = new URLSearchParams();
+  if (params.page) q.set('page', String(params.page));
+  if (params.limit) q.set('limit', String(params.limit));
+  if (params.search) q.set('search', params.search);
+  if (params.status && params.status !== 'all') q.set('status', params.status);
+  if (params.category) q.set('category', params.category);
+  return adminFetch<CoursesPage>(`/courses?${q.toString()}`);
+}
+
+export async function createCourse(payload: CourseFormInput): Promise<Course> {
+  return adminFetch<Course>('/courses', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateCourse(id: string, payload: Partial<CourseFormInput>): Promise<Course> {
+  return adminFetch<Course>(`/courses/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteCourse(id: string): Promise<void> {
+  await adminFetch<Course>(`/courses/${id}`, { method: 'DELETE' });
+}
+
+// ── Instructors (for select options) ───────────────────
+export interface InstructorOption {
+  id: string;
+  name: string;
+}
+
+export async function getInstructorOptions(): Promise<InstructorOption[]> {
+  return adminFetch<InstructorOption[]>('/instructors');
+}
+
+export async function uploadCourseThumbnail(file: File): Promise<string> {
+  const token = getAdminToken();
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`${BASE}/courses/upload`, {
+    method: 'POST',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  let json: unknown;
+  try { json = await res.json(); } catch { json = {}; }
+
+  if (!res.ok) {
+    const err = json as ApiError;
+    const msg = Array.isArray(err.message) ? err.message[0] : (err.message ?? 'Tải ảnh lên thất bại');
+    throw new Error(msg);
+  }
+
+  const envelope = json as ApiEnvelope<string>;
+  return envelope.data !== undefined ? envelope.data : (json as string);
+}
+
+export interface CourseModuleInput {
+  title: string;
+  subtitle?: string;
+  description?: string;
+  duration_minutes: number;
+  start_time?: string;
+  item_type: 'module' | 'break' | 'event';
+}
+
+export async function updateCourseModules(
+  courseId: string,
+  modules: CourseModuleInput[]
+): Promise<void> {
+  const cleaned = modules.map((m) => ({
+    title: m.title ? m.title.trim() : '',
+    subtitle: m.subtitle ? m.subtitle.trim() : undefined,
+    description: m.description ? m.description.trim() : undefined,
+    duration_minutes: Number(m.duration_minutes) || 0,
+    start_time: m.start_time ? m.start_time.trim() : undefined,
+    item_type: m.item_type || 'module',
+  }));
+
+  await adminFetch<void>(`/courses/${courseId}/modules`, {
+    method: 'PUT',
+    body: JSON.stringify({ modules: cleaned }),
+  });
+}
+
+export async function getCourseModules(courseId: string): Promise<CourseModuleInput[]> {
+  return adminFetch<CourseModuleInput[]>(`/courses/${courseId}/modules`);
+}

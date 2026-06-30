@@ -45,9 +45,6 @@ export class RegistrationsService {
       .single();
 
     if (error) {
-      if (error.code === '23505') {
-        throw new BadRequestException('Email này đã đăng ký khóa học này rồi');
-      }
       this.logger.error('Create registration failed', error);
       throw new BadRequestException('Đăng ký thất bại, vui lòng thử lại');
     }
@@ -103,9 +100,6 @@ export class RegistrationsService {
       .select('id, created_at');
 
     if (error) {
-      if (error.code === '23505') {
-        throw new BadRequestException('Một hoặc nhiều email trong nhóm đã đăng ký khóa học này rồi');
-      }
       this.logger.error('Create group registration failed', error);
       throw new BadRequestException('Đăng ký thất bại, vui lòng thử lại');
     }
@@ -266,13 +260,8 @@ export class RegistrationsService {
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        msg_type: 'text',
-        content: {
-          text: body,
-        },
-      }),
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      body: body,
     });
 
     if (!response.ok) {

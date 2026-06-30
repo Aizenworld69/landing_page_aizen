@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import * as Joi from 'joi';
 import { APP_FILTER, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -43,6 +44,7 @@ import { HealthController } from './health.controller';
         limit: 100,
       },
     ]),
+    ScheduleModule.forRoot(),
     SupabaseModule,
     AuthModule,
     BlogsModule,
