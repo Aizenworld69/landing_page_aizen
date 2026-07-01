@@ -116,26 +116,26 @@ export function CourseHero({ course }: CourseHeroProps) {
         </motion.div>
 
         {/* Price + Date */}
-        <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-6">
+        <motion.div variants={fadeUp} className="grid grid-cols-2 gap-4 w-full">
           {date && (
-            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#0EA5E9]/15 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[#0EA5E9] text-base">calendar_month</span>
+            <div className="grid grid-cols-[auto_1fr] items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 min-h-[68px]">
+              <div className="w-8 h-8 rounded-lg bg-[#0EA5E9]/15 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[#0EA5E9] text-base leading-none">calendar_month</span>
               </div>
-              <div>
-                <p className="text-white font-bold text-sm">{date}</p>
-                <p className="text-slate-400 text-xs">8h30 – 17h00</p>
+              <div className="flex flex-col justify-center leading-none">
+                <p className="text-white font-bold text-sm leading-tight m-0 p-0">{date}</p>
+                <p className="text-slate-400 text-xs leading-tight mt-1 m-0 p-0">8h30 – 17h00</p>
               </div>
             </div>
           )}
 
-          <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#0EA5E9]/15 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[#0EA5E9] text-base">sell</span>
+          <div className="grid grid-cols-[auto_1fr] items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 min-h-[68px] @container">
+            <div className="w-8 h-8 rounded-lg bg-[#0EA5E9]/15 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[#0EA5E9] text-base leading-none">sell</span>
             </div>
-            <div>
-              <p className="text-white font-black text-lg leading-tight">{formatPrice(course.price)}</p>
-              <p className="text-slate-400 text-xs">Nhóm từ {formatPrice(course.price_group)}/người</p>
+            <div className="flex flex-col justify-center leading-none">
+              <p className="text-white font-black text-lg leading-tight m-0 p-0">{formatPrice(course.price)}</p>
+              <p className="text-slate-400 text-xs leading-tight mt-1 m-0 p-0">Nhóm từ {formatPrice(course.price_group)}/người</p>
             </div>
           </div>
         </motion.div>
