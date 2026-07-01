@@ -42,4 +42,10 @@ export class CreateRegistrationDto {
   @ApiProperty({ enum: ['individual', 'group'], default: 'individual' })
   @IsEnum(['individual', 'group'])
   plan: 'individual' | 'group';
+
+  @ApiPropertyOptional({ description: 'Mã khuyến mãi (nếu có)', example: 'AIZEN50' })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }: { value: string }) => value?.toUpperCase().trim())
+  promoCode?: string;
 }

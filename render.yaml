@@ -25,3 +25,8 @@ services:
         sync: false
       - key: LARK_WEBHOOK_URL
         sync: false
+      # Dùng để gọi sang FE (Next.js) xóa cache ISR ngay khi admin sửa/đăng/xóa
+      # blog hoặc khóa học. PHẢI trùng giá trị với biến REVALIDATE_SECRET bên
+      # Vercel (frontend). Nhập tay trên Render dashboard, không commit giá trị thật.
+      - key: REVALIDATE_SECRET
+        sync: false

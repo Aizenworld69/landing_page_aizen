@@ -51,8 +51,8 @@ export function BlogSidebar() {
         </ul>
       </div>
 
-      <div>
-        <h3 className="text-sm font-bold text-gray-900 mb-3">Social</h3>
+      <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-blue-50 border border-sky-100 p-5">
+        <h3 className="text-sm font-bold text-gray-900 mb-3">Kết nối với AIZEN</h3>
         <div className="flex items-center gap-3">
           {SOCIAL_LINKS.map((social) => (
             <a
@@ -61,9 +61,9 @@ export function BlogSidebar() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={social.label}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-sky-500 hover:text-white transition-colors"
+              className="group w-10 h-10 flex items-center justify-center rounded-full bg-white text-sky-500 shadow-sm ring-1 ring-sky-200 hover:bg-sky-500 hover:text-white hover:ring-sky-500 hover:shadow-md hover:shadow-sky-500/30 hover:-translate-y-0.5 transition-all duration-200"
             >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4.5 h-4.5 transition-transform duration-200 group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
                 {social.icon}
               </svg>
             </a>

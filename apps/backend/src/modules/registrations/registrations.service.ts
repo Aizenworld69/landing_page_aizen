@@ -10,6 +10,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_CLIENT } from '../../database/supabase.module';
 import type { CreateRegistrationDto } from './dto/create-registration.dto';
 import type { CreateGroupRegistrationDto } from './dto/create-group-registration.dto';
+import { PromoCodesService } from '../promo-codes/promo-codes.service';
 
 @Injectable()
 export class RegistrationsService {
@@ -19,6 +20,7 @@ export class RegistrationsService {
     @Inject(SUPABASE_CLIENT)
     private readonly supabase: SupabaseClient,
     private readonly config: ConfigService,
+    private readonly promoCodesService: PromoCodesService,
   ) {}
 
   // ─────────────────────────────────────────────
@@ -26,6 +28,30 @@ export class RegistrationsService {
   // ─────────────────────────────────────────────
   async create(dto: CreateRegistrationDto) {
     const course = await this.verifyCourse(dto.courseId);
+
+    // ── Áp dụng mã khuyến mãi nếu có ──
+    let discountAmount = 0;
+    let appliedPromoCode: string | null = null;
+
+    if (dto.promoCode) {
+      const promo = await this.promoCodesService.applyCode(
+        dto.promoCode,
+        dto.courseId,
+        dto.plan,
+      );
+      if (!promo.valid) {
+        throw new BadRequestException(promo.message);
+      }
+      appliedPromoCode = dto.promoCode;
+      // Tính discount_amount (nếu biết giá khóa học)
+      const coursePrice = (course as Record<string, unknown>)['price'] as number | null;
+      if (coursePrice && promo.discount_type && promo.discount_value) {
+        discountAmount =
+          promo.discount_type === 'percent'
+            ? Math.round((coursePrice * promo.discount_value) / 100)
+            : Math.min(promo.discount_value, coursePrice);
+      }
+    }
 
     // UNIQUE constraint in Supabase database:
     // ALTER TABLE registrations ADD CONSTRAINT uq_reg_course_email UNIQUE (course_id, email);
@@ -40,6 +66,8 @@ export class RegistrationsService {
         position: dto.position ?? null,
         referral: dto.referral,
         plan: dto.plan,
+        promo_code: appliedPromoCode,
+        discount_amount: discountAmount,
       })
       .select('id, created_at')
       .single();
@@ -59,12 +87,15 @@ export class RegistrationsService {
       referral: dto.referral,
       plan: dto.plan,
       createdAt: data['created_at'] as string,
+      promoCode: appliedPromoCode ?? undefined,
+      discountAmount,
     }).catch((err: unknown) => this.logger.error('Lark notification failed', err));
 
     return {
       id: data['id'],
       message: 'Đăng ký thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.',
       createdAt: data['created_at'],
+      discountAmount,
     };
   }
 
@@ -80,6 +111,29 @@ export class RegistrationsService {
       throw new BadRequestException('Hai thành viên không được dùng cùng địa chỉ email');
     }
 
+    // ── Áp dụng mã khuyến mãi nếu có ──
+    let discountAmount = 0;
+    let appliedPromoCode: string | null = null;
+
+    if (dto.promoCode) {
+      const promo = await this.promoCodesService.applyCode(
+        dto.promoCode,
+        dto.course_id,
+        'group',
+      );
+      if (!promo.valid) {
+        throw new BadRequestException(promo.message);
+      }
+      appliedPromoCode = dto.promoCode;
+      const coursePrice = (course as Record<string, unknown>)['price_group'] as number | null;
+      if (coursePrice && promo.discount_type && promo.discount_value) {
+        discountAmount =
+          promo.discount_type === 'percent'
+            ? Math.round((coursePrice * promo.discount_value) / 100)
+            : Math.min(promo.discount_value, coursePrice);
+      }
+    }
+
     // Insert tất cả members
     const rows = dto.members.map((m) => ({
       course_id: dto.course_id,
@@ -90,6 +144,8 @@ export class RegistrationsService {
       position: m.position ?? null,
       referral: dto.referral,
       plan: 'group',
+      promo_code: appliedPromoCode,
+      discount_amount: discountAmount,
     }));
 
     // UNIQUE constraint in Supabase database:
@@ -111,11 +167,14 @@ export class RegistrationsService {
       members: dto.members,
       referral: dto.referral,
       createdAt,
+      promoCode: appliedPromoCode ?? undefined,
+      discountAmount,
     }).catch((err: unknown) => this.logger.error('Lark group notification failed', err));
 
     return {
       message: 'Đăng ký nhóm thành công! Chúng tôi sẽ liên hệ sớm nhất.',
       count: dto.members.length,
+      discountAmount,
     };
   }
 
@@ -175,7 +234,7 @@ export class RegistrationsService {
   private async verifyCourse(courseId: string) {
     const { data: course, error } = await this.supabase
       .from('courses')
-      .select('id, title, status')
+      .select('id, title, status, price, price_group')
       .eq('id', courseId)
       .single();
 
@@ -196,6 +255,8 @@ export class RegistrationsService {
     referral: string;
     plan: 'individual' | 'group';
     createdAt: string;
+    promoCode?: string;
+    discountAmount?: number;
   }): Promise<void> {
     const webhookUrl = this.config.get<string>('lark.webhookUrl');
     if (!webhookUrl) return;
@@ -203,6 +264,9 @@ export class RegistrationsService {
     const planLabel = params.plan === 'group' ? 'Nhóm 2 người' : 'Cá nhân (1 người)';
     const companyLine = params.company ? `\nCông ty: ${params.company}` : '';
     const positionLine = params.position ? `\nChức vụ: ${params.position}` : '';
+    const promoLine = params.promoCode
+      ? `\n🎟️ Mã KM: ${params.promoCode} (giảm ${(params.discountAmount ?? 0).toLocaleString('vi-VN')}đ)`
+      : '';
     const vnTime = this.toVnTime(params.createdAt);
 
     const body = [
@@ -212,7 +276,7 @@ export class RegistrationsService {
       `Điện thoại: ${params.phone}`,
       `Email: ${params.email}${companyLine}${positionLine}`,
       `Nguồn: ${params.referral}`,
-      `Gói: ${planLabel}`,
+      `Gói: ${planLabel}${promoLine}`,
       `Thời gian: ${vnTime}`,
     ].join('\n');
 
@@ -224,11 +288,16 @@ export class RegistrationsService {
     members: Array<{ full_name: string; phone: string; email: string; company?: string; position?: string }>;
     referral: string;
     createdAt: string;
+    promoCode?: string;
+    discountAmount?: number;
   }): Promise<void> {
     const webhookUrl = this.config.get<string>('lark.webhookUrl');
     if (!webhookUrl) return;
 
     const vnTime = this.toVnTime(params.createdAt);
+    const promoLine = params.promoCode
+      ? `\n🎟️ Mã KM: ${params.promoCode} (giảm ${(params.discountAmount ?? 0).toLocaleString('vi-VN')}đ)`
+      : '';
 
     const memberLines = params.members
       .map((m, i) => {
@@ -241,7 +310,7 @@ export class RegistrationsService {
     const body = [
       `🆕 Đăng ký NHÓM 2 người mới!`,
       `Khóa học: ${params.courseTitle}`,
-      `Nguồn: ${params.referral}`,
+      `Nguồn: ${params.referral}${promoLine}`,
       ``,
       memberLines,
       ``,

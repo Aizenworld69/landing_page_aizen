@@ -51,6 +51,12 @@ export default async function CoursesPage({
   const { items, pagination } = await fetchCourses(params);
   const currentPage = Number(params.page ?? 1);
 
+  // Chi khoa hoc "sap dien ra" co ngay khai giang GAN NHAT moi duoc noi bat/chuyen dong
+  const nearestUpcomingDate = items
+    .filter((c) => c.status === 'upcoming' && c.start_date)
+    .map((c) => c.start_date as string)
+    .sort()[0] ?? null;
+
   return (
     <>
       <Navbar />
@@ -76,7 +82,11 @@ export default async function CoursesPage({
           {items.length > 0 ? (
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {items.map((course) => (
-                <CourseCard key={course.id} course={course} />
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  isNearestUpcoming={nearestUpcomingDate !== null && course.start_date === nearestUpcomingDate}
+                />
               ))}
             </div>
           ) : (

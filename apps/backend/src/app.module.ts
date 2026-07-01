@@ -19,6 +19,7 @@ import { InstructorsModule } from './modules/instructors/instructors.module';
 import { RegistrationsModule } from './modules/registrations/registrations.module';
 import { EnrollmentsModule } from './modules/enrollments/enrollments.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { PromoCodesModule } from './modules/promo-codes/promo-codes.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -53,6 +54,7 @@ import { HealthController } from './health.controller';
     RegistrationsModule,
     EnrollmentsModule,
     ReviewsModule,
+    PromoCodesModule,
   ],
   controllers: [HealthController],
   providers: [

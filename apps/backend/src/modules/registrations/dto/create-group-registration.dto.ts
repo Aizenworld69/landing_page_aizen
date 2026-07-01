@@ -57,4 +57,10 @@ export class CreateGroupRegistrationDto {
   @ArrayMaxSize(2, { message: 'Đăng ký nhóm tối đa 2 người' })
   @Type(() => GroupMemberDto)
   members: GroupMemberDto[];
+
+  @ApiPropertyOptional({ description: 'Mã khuyến mãi (nếu có)', example: 'AIZEN50' })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }: { value: string }) => value?.toUpperCase().trim())
+  promoCode?: string;
 }

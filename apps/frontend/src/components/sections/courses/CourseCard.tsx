@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -9,17 +9,22 @@ interface CourseCardProps {
   course: Course;
   theme?: 'light' | 'dark';
   showActions?: boolean;
+  /** Chi khoa hoc "sap dien ra" GAN NHAT (so voi toan bo danh sach) moi duoc noi bat + chuyen dong */
+  isNearestUpcoming?: boolean;
 }
 
-export function CourseCard({ course, theme = 'light', showActions = true }: CourseCardProps) {
+export function CourseCard({ course, theme = 'light', showActions = true, isNearestUpcoming = false }: CourseCardProps) {
   const daysUntil = course.start_date ? getDaysUntil(course.start_date) : null;
   const isDark = theme === 'dark';
 
+  const isUpcoming = course.status === 'upcoming';
+  const isUrgent = isUpcoming && isNearestUpcoming;
+
   return (
     <div
-      className={`rounded-2xl overflow-hidden flex flex-col transition-transform hover:-translate-y-1 ${
+      className={`relative rounded-2xl overflow-hidden flex flex-col transition-transform hover:-translate-y-1 ${
         isDark ? 'bg-navy-800 border border-gray-700' : 'bg-white border border-gray-100 shadow-sm'
-      }`}
+      } ${isUrgent ? 'ring-2 ring-orange-400 animate-pulse-glow-urgent' : ''}`}
     >
       {/* Thumbnail */}
       <div className="relative h-44 bg-gray-100">
@@ -37,8 +42,12 @@ export function CourseCard({ course, theme = 'light', showActions = true }: Cour
           </div>
         )}
         <div className="absolute top-3 left-3">
-          <Badge variant={course.status}>
-            {course.status === 'upcoming' ? 'Sắp diễn ra' : 'Đã hoàn thành'}
+          <Badge variant={isUrgent ? 'urgent' : course.status} pulse={isUrgent}>
+            {isUrgent
+              ? `Khai giảng sau ${daysUntil} ngày`
+              : course.status === 'upcoming'
+              ? 'Sắp diễn ra'
+              : 'Đã hoàn thành'}
           </Badge>
         </div>
       </div>
@@ -62,7 +71,9 @@ export function CourseCard({ course, theme = 'light', showActions = true }: Cour
         {course.start_date && (
           <div className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             {course.status === 'upcoming' && daysUntil !== null && daysUntil > 0 ? (
-              <span className="text-amber-500">⏱ Bắt đầu sau {daysUntil} ngày</span>
+              <span className={isUrgent ? 'text-orange-600 font-semibold' : 'text-amber-500'}>
+                ⏱ Bắt đầu sau {daysUntil} ngày
+              </span>
             ) : (
               <span>📅 {formatDate(course.start_date)}</span>
             )}
