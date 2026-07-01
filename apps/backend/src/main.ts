@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import compression from 'compression';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -10,6 +11,9 @@ async function bootstrap() {
 
   // Security
   app.use(helmet());
+
+  // Nén response (gzip/brotli) — giảm dung lượng JSON trả về, tăng tốc load
+  app.use(compression());
 
   // CORS — hỗ trợ localhost dev và Vercel production
   app.enableCors({

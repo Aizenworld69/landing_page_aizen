@@ -72,9 +72,9 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Zalo float button */}
+      {/* Zalo float button — link theo SĐT Zalo chính thức của AIZEN */}
       <a
-        href="https://zalo.me/aizen"
+        href="https://zalo.me/84362077399"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#0068ff] text-white rounded-full shadow-xl px-4 py-3 hover:scale-105 transition-transform"

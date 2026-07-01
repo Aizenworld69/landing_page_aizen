@@ -34,10 +34,15 @@ export default function RootLayout({
         {/* Preconnect để load nhanh hơn */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Material Symbols — không có trong next/font nên dùng link trực tiếp */}
+        {/*
+          Material Symbols — không có trong next/font nên dùng link trực tiếp.
+          display=swap (thay vì block) để không chặn render nội dung trang
+          trong lúc chờ font tải; icon sẽ hiện ra ngay khi font sẵn sàng
+          thay vì giữ trắng cả trang.
+        */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
         />
       </head>
       <body className={inter.className}>{children}</body>
