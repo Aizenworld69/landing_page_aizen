@@ -26,7 +26,6 @@ export interface Course {
   qr_group_2_promo?: string | null;
   qr_group_4_promo?: string | null;
   plans_config?: any;
-  early_bird_deadline?: string | null;
   created_at: string;
 }
 
