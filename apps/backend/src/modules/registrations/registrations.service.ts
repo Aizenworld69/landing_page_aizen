@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Inject,
   Injectable,
@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { randomUUID } from 'crypto';
 import { SUPABASE_CLIENT } from '../../database/supabase.module';
 import type { CreateRegistrationDto } from './dto/create-registration.dto';
 import type { CreateGroupRegistrationDto } from './dto/create-group-registration.dto';
@@ -37,7 +38,7 @@ export class RegistrationsService {
       const promo = await this.promoCodesService.applyCode(
         dto.promoCode,
         dto.courseId,
-        dto.plan,
+        dto.plan === 'group' ? 'group_2' : dto.plan,
       );
       if (!promo.valid) {
         throw new BadRequestException(promo.message);
@@ -116,10 +117,11 @@ export class RegistrationsService {
     let appliedPromoCode: string | null = null;
 
     if (dto.promoCode) {
+      const planKey = dto.members.length === 4 ? 'group_4' : 'group_2';
       const promo = await this.promoCodesService.applyCode(
         dto.promoCode,
         dto.course_id,
-        'group',
+        planKey,
       );
       if (!promo.valid) {
         throw new BadRequestException(promo.message);
@@ -134,7 +136,8 @@ export class RegistrationsService {
       }
     }
 
-    // Insert tất cả members
+    // Insert tất cả members - cùng group_id để admin panel gom nhóm hiển thị
+    const groupId = randomUUID();
     const rows = dto.members.map((m) => ({
       course_id: dto.course_id,
       full_name: m.full_name,
@@ -144,6 +147,7 @@ export class RegistrationsService {
       position: m.position ?? null,
       referral: dto.referral,
       plan: 'group',
+      group_id: groupId,
       promo_code: appliedPromoCode,
       discount_amount: discountAmount,
     }));
@@ -189,7 +193,7 @@ export class RegistrationsService {
 
     let query = this.supabase
       .from('registrations')
-      .select('id, full_name, phone, email, company, position, referral, plan, created_at, course_id, courses(title, price, price_group)', { count: 'exact' })
+      .select('id, full_name, phone, email, company, position, referral, plan, group_id, created_at, course_id, courses(title, price, price_group)', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(from, to);
 
@@ -308,7 +312,7 @@ export class RegistrationsService {
       .join('\n\n');
 
     const body = [
-      `🆕 Đăng ký NHÓM 2 người mới!`,
+      `🆕 Đăng ký NHÓM ${params.members.length} người mới!`,
       `Khóa học: ${params.courseTitle}`,
       `Nguồn: ${params.referral}${promoLine}`,
       ``,

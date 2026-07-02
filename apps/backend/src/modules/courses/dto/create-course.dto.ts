@@ -1,5 +1,6 @@
-import {
+﻿import {
   IsArray,
+  IsDateString,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -114,4 +115,29 @@ export class CreateCourseDto {
   @ApiPropertyOptional()
   @IsOptional()
   plans_config?: any;
+
+  @ApiPropertyOptional({ description: 'QR chuyển khoản gói Early Bird sau khuyến mãi' })
+  @IsOptional()
+  @IsString()
+  qr_early_bird_promo?: string;
+
+  @ApiPropertyOptional({ description: 'QR chuyển khoản gói Cá nhân sau khuyến mãi' })
+  @IsOptional()
+  @IsString()
+  qr_individual_promo?: string;
+
+  @ApiPropertyOptional({ description: 'QR chuyển khoản gói Nhóm 2 người sau khuyến mãi' })
+  @IsOptional()
+  @IsString()
+  qr_group_2_promo?: string;
+
+  @ApiPropertyOptional({ description: 'QR chuyển khoản gói Nhóm 4 người sau khuyến mãi' })
+  @IsOptional()
+  @IsString()
+  qr_group_4_promo?: string;
+
+  @ApiPropertyOptional({ description: 'Hạn chót đăng ký gói Early Bird (ISO datetime). Để trống = không giới hạn.' })
+  @IsOptional()
+  @IsDateString()
+  early_bird_deadline?: string;
 }

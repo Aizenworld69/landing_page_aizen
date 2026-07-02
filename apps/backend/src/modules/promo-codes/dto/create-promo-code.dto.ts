@@ -1,5 +1,4 @@
 import {
-  IsEnum,
   IsIn,
   IsISO8601,
   IsNotEmpty,
@@ -11,6 +10,7 @@ import {
   MaxLength,
   Min,
   Matches,
+  ValidateIf,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -25,13 +25,16 @@ export class CreatePromoCodeDto {
   code: string;
 
   @ApiProperty({ description: 'UUID của khóa học áp dụng' })
-  @IsUUID()
   @IsNotEmpty()
+  @IsString()
+  @Matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, {
+    message: 'course_id phải là định dạng UUID hợp lệ',
+  })
   course_id: string;
 
-  @ApiProperty({ enum: ['individual', 'group', 'all'], default: 'all' })
-  @IsIn(['individual', 'group', 'all'])
-  plan: 'individual' | 'group' | 'all';
+  @ApiProperty({ enum: ['early_bird', 'individual', 'group_2', 'group_4', 'all'], default: 'all' })
+  @IsIn(['early_bird', 'individual', 'group_2', 'group_4', 'all'])
+  plan: 'early_bird' | 'individual' | 'group_2' | 'group_4' | 'all';
 
   @ApiProperty({ enum: ['percent', 'fixed'], description: 'percent = % giảm, fixed = giảm cố định (VND)' })
   @IsIn(['percent', 'fixed'])
@@ -49,8 +52,10 @@ export class CreatePromoCodeDto {
 
   @ApiPropertyOptional({ description: 'Ngày hết hạn (ISO 8601), bỏ trống = không hết hạn' })
   @IsOptional()
+  @Transform(({ value }) => (value === '' || value === null || value === undefined) ? undefined : value)
+  @ValidateIf((_, v) => v !== undefined && v !== null)
   @IsISO8601()
-  expires_at?: string;
+  expires_at?: string | null;
 
   @ApiPropertyOptional({ description: 'Ghi chú nội bộ cho marketing' })
   @IsOptional()

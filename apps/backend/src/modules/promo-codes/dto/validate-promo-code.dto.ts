@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -10,11 +10,12 @@ export class ValidatePromoCodeDto {
   code: string;
 
   @ApiProperty({ description: 'UUID khóa học đang đăng ký' })
-  @IsUUID()
   @IsNotEmpty()
+  @IsString()
   course_id: string;
 
-  @ApiProperty({ enum: ['individual', 'group'] })
-  @IsEnum(['individual', 'group'])
-  plan: 'individual' | 'group';
+  @ApiProperty({ enum: ['early_bird', 'individual', 'group_2', 'group_4'] })
+  @IsNotEmpty()
+  @IsString()
+  plan: string;
 }

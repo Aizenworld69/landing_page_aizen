@@ -47,6 +47,7 @@ yarn-error.log*
 .pnpm-debug.log*
 logs/
 *.log
+dev-log.txt
 
 # ─── Temporary files ─────────────────────────────────────────
 tmp/
@@ -54,6 +55,11 @@ temp/
 
 # ─── Vercel ──────────────────────────────────────────────────
 .vercel
+
+# ─── Debug / Local scripts ───────────────────────────────────
+debug*.ps1
+debug*.sh
+debug*.js
 
 # ─── Package-lock (nếu dùng npm workspaces, giữ lại ở root) ──
 # Bỏ comment dòng dưới nếu bạn dùng pnpm hoặc yarn

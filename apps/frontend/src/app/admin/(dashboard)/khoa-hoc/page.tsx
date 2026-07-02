@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
@@ -10,8 +10,9 @@ import {
   uploadCourseThumbnail,
   updateCourseModules,
   getCourseModules,
+  getActivePromos,
 } from '@/lib/admin/api';
-import type { Course, CourseFormInput, CourseStatus, InstructorOption, CourseModuleInput } from '@/lib/admin/api';
+import type { Course, CourseFormInput, CourseStatus, InstructorOption, CourseModuleInput, ActivePromoMap } from '@/lib/admin/api';
 
 const LIMIT = 10;
 
@@ -51,7 +52,12 @@ const EMPTY_FORM: CourseFormInput = {
   qr_individual: '',
   qr_group_2: '',
   qr_group_4: '',
+  qr_early_bird_promo: '',
+  qr_individual_promo: '',
+  qr_group_2_promo: '',
+  qr_group_4_promo: '',
   plans_config: undefined,
+  early_bird_deadline: '',
 };
 
 export default function KhoaHocPage() {
@@ -149,7 +155,15 @@ export default function KhoaHocPage() {
   const [qrUploading, setQrUploading] = useState<Record<string, boolean>>({});
   const [qrUploadError, setQrUploadError] = useState<Record<string, string>>({});
 
-  async function handleQrUpload(field: 'qr_early_bird' | 'qr_individual' | 'qr_group_2' | 'qr_group_4', e: React.ChangeEvent<HTMLInputElement>) {
+  // Active promos state (fetch khi mở edit modal)
+  const [activePromos, setActivePromos] = useState<ActivePromoMap>({});
+
+  async function handleQrUpload(
+    field:
+      | 'qr_early_bird' | 'qr_individual' | 'qr_group_2' | 'qr_group_4'
+      | 'qr_early_bird_promo' | 'qr_individual_promo' | 'qr_group_2_promo' | 'qr_group_4_promo',
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -267,6 +281,7 @@ export default function KhoaHocPage() {
     setUploadError('');
     setQrUploading({});
     setQrUploadError({});
+    setActivePromos({});
     setActiveTab('info');
     setModalOpen(true);
   }
@@ -290,8 +305,19 @@ export default function KhoaHocPage() {
       qr_individual: course.qr_individual ?? '',
       qr_group_2: course.qr_group_2 ?? '',
       qr_group_4: course.qr_group_4 ?? '',
+      qr_early_bird_promo: course.qr_early_bird_promo ?? '',
+      qr_individual_promo: course.qr_individual_promo ?? '',
+      qr_group_2_promo: course.qr_group_2_promo ?? '',
+      qr_group_4_promo: course.qr_group_4_promo ?? '',
       plans_config: course.plans_config ?? undefined,
+      early_bird_deadline: course.early_bird_deadline ?? '',
     });
+
+    // Fetch promo đang active để biết gói nào đang có KM
+    setActivePromos({});
+    getActivePromos(course.id)
+      .then(setActivePromos)
+      .catch(() => setActivePromos({}));
     setSlugTouched(true);
     setFormError('');
     setUploading(false);
@@ -352,7 +378,12 @@ export default function KhoaHocPage() {
         qr_individual: form.qr_individual || undefined,
         qr_group_2: form.qr_group_2 || undefined,
         qr_group_4: form.qr_group_4 || undefined,
+        qr_early_bird_promo: form.qr_early_bird_promo || undefined,
+        qr_individual_promo: form.qr_individual_promo || undefined,
+        qr_group_2_promo: form.qr_group_2_promo || undefined,
+        qr_group_4_promo: form.qr_group_4_promo || undefined,
         plans_config: form.plans_config || undefined,
+        early_bird_deadline: form.early_bird_deadline || undefined,
       };
 
       if (editingId) {
@@ -1214,13 +1245,22 @@ export default function KhoaHocPage() {
                             className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs focus:outline-none focus:border-sky-500 transition-all"
                           />
                         </div>
-                        <div>
+                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Học phí tùy chỉnh (VNĐ)</label>
                           <input
                             type="number"
                             value={form.plans_config?.early_bird?.price ?? ''}
                             placeholder={`Mặc định: ${Math.round(form.price * 0.73)}`}
                             onChange={(e) => updatePlanConfig('early_bird', 'price', e.target.value ? Number(e.target.value) : undefined)}
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs focus:outline-none focus:border-sky-500 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Hạn chót gói Early Bird</label>
+                          <input
+                            type="datetime-local"
+                            value={form.early_bird_deadline ? form.early_bird_deadline.slice(0, 16) : ''}
+                            onChange={(e) => setForm((f) => ({ ...f, early_bird_deadline: e.target.value ? new Date(e.target.value).toISOString() : '' }))}
                             className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs focus:outline-none focus:border-sky-500 transition-all"
                           />
                         </div>
@@ -1260,7 +1300,58 @@ export default function KhoaHocPage() {
                               <input type="file" accept="image/*" disabled={qrUploading['qr_early_bird']} className="hidden" onChange={(e) => handleQrUpload('qr_early_bird', e)} />
                             </label>
                           )}
-                          {qrUploadError['qr_early_bird'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_early_bird']}</p>}
+                          {qrUploadError?.['qr_early_bird'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_early_bird']}</p>}
+                        </div>
+
+                        {/* QR Khuyến mãi Early Bird — luôn hiện, không phụ thuộc khuyến mãi đang active */}
+                        <div className="mt-1 pt-3 border-t border-amber-200">
+                            {activePromos.early_bird && (
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full uppercase tracking-wide">🎁 Đang có KM</span>
+                              <span className="text-[10px] text-amber-600 font-semibold">
+                                Giảm {activePromos.early_bird.discount_type === 'percent'
+                                  ? `${activePromos.early_bird.discount_value}%`
+                                  : `${activePromos.early_bird.discount_value.toLocaleString('vi-VN')}đ`}
+                                {' → '}
+                                {activePromos.early_bird.discount_type === 'percent'
+                                  ? formatVnd(Math.round((form.plans_config?.early_bird?.price ?? Math.round(form.price * 0.73)) * (1 - activePromos.early_bird.discount_value / 100)))
+                                  : formatVnd(Math.max(0, (form.plans_config?.early_bird?.price ?? Math.round(form.price * 0.73)) - activePromos.early_bird.discount_value))
+                                }
+                              </span>
+                            </div>
+                            )}
+                            <label className="block text-[10px] font-bold text-amber-600 uppercase mb-1">QR Sau Khuyến Mãi</label>
+                            {form.qr_early_bird_promo ? (
+                              <div className="relative group rounded-xl overflow-hidden border border-amber-200 aspect-[2/1] w-full bg-amber-50 flex items-center justify-center">
+                                <img src={form.qr_early_bird_promo} alt="QR Early Bird KM" className="w-full h-full object-contain p-2" />
+                                <button type="button" onClick={() => setForm((f) => ({ ...f, qr_early_bird_promo: '' }))}
+                                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/85 hover:bg-red-600 text-white transition-colors cursor-pointer shadow-md">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ) : (
+                              <label className="flex flex-col items-center justify-center w-full aspect-[2/1] border-2 border-dashed border-amber-200 hover:border-amber-400 rounded-xl cursor-pointer bg-amber-50/30 hover:bg-amber-50 transition-all group text-center">
+                                <div className="flex flex-col items-center justify-center p-2">
+                                  {qrUploading['qr_early_bird_promo'] ? (
+                                    <svg className="animate-spin h-6 w-6 text-amber-500" viewBox="0 0 24 24" fill="none">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                    </svg>
+                                  ) : (
+                                    <>
+                                      <svg className="w-5 h-5 text-amber-400 group-hover:text-amber-500 transition-colors mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                      </svg>
+                                      <span className="text-[11px] font-bold text-amber-600 group-hover:text-amber-700">Tải QR khuyến mãi</span>
+                                    </>
+                                  )}
+                                </div>
+                                <input type="file" accept="image/*" disabled={qrUploading['qr_early_bird_promo']} className="hidden" onChange={(e) => handleQrUpload('qr_early_bird_promo', e)} />
+                              </label>
+                            )}
+                            {qrUploadError?.['qr_early_bird_promo'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_early_bird_promo']}</p>}
                         </div>
                       </div>
                     </div>
@@ -1341,7 +1432,58 @@ export default function KhoaHocPage() {
                               <input type="file" accept="image/*" disabled={qrUploading['qr_individual']} className="hidden" onChange={(e) => handleQrUpload('qr_individual', e)} />
                             </label>
                           )}
-                          {qrUploadError['qr_individual'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_individual']}</p>}
+                          {qrUploadError?.['qr_individual'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_individual']}</p>}
+                        </div>
+
+                        {/* QR Khuyến mãi Individual — luôn hiện, không phụ thuộc khuyến mãi đang active */}
+                        <div className="mt-1 pt-3 border-t border-amber-200">
+                            {activePromos.individual && (
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full uppercase tracking-wide">🎁 Đang có KM</span>
+                              <span className="text-[10px] text-amber-600 font-semibold">
+                                Giảm {activePromos.individual.discount_type === 'percent'
+                                  ? `${activePromos.individual.discount_value}%`
+                                  : `${activePromos.individual.discount_value.toLocaleString('vi-VN')}đ`}
+                                {' → '}
+                                {activePromos.individual.discount_type === 'percent'
+                                  ? formatVnd(Math.round((form.plans_config?.individual?.price ?? form.price) * (1 - activePromos.individual.discount_value / 100)))
+                                  : formatVnd(Math.max(0, (form.plans_config?.individual?.price ?? form.price) - activePromos.individual.discount_value))
+                                }
+                              </span>
+                            </div>
+                            )}
+                            <label className="block text-[10px] font-bold text-amber-600 uppercase mb-1">QR Sau Khuyến Mãi</label>
+                            {form.qr_individual_promo ? (
+                              <div className="relative group rounded-xl overflow-hidden border border-amber-200 aspect-[2/1] w-full bg-amber-50 flex items-center justify-center">
+                                <img src={form.qr_individual_promo} alt="QR Individual KM" className="w-full h-full object-contain p-2" />
+                                <button type="button" onClick={() => setForm((f) => ({ ...f, qr_individual_promo: '' }))}
+                                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/85 hover:bg-red-600 text-white transition-colors cursor-pointer shadow-md">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ) : (
+                              <label className="flex flex-col items-center justify-center w-full aspect-[2/1] border-2 border-dashed border-amber-200 hover:border-amber-400 rounded-xl cursor-pointer bg-amber-50/30 hover:bg-amber-50 transition-all group text-center">
+                                <div className="flex flex-col items-center justify-center p-2">
+                                  {qrUploading['qr_individual_promo'] ? (
+                                    <svg className="animate-spin h-6 w-6 text-amber-500" viewBox="0 0 24 24" fill="none">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                    </svg>
+                                  ) : (
+                                    <>
+                                      <svg className="w-5 h-5 text-amber-400 group-hover:text-amber-500 transition-colors mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                      </svg>
+                                      <span className="text-[11px] font-bold text-amber-600 group-hover:text-amber-700">Tải QR khuyến mãi</span>
+                                    </>
+                                  )}
+                                </div>
+                                <input type="file" accept="image/*" disabled={qrUploading['qr_individual_promo']} className="hidden" onChange={(e) => handleQrUpload('qr_individual_promo', e)} />
+                              </label>
+                            )}
+                            {qrUploadError?.['qr_individual_promo'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_individual_promo']}</p>}
                         </div>
                       </div>
                     </div>
@@ -1422,7 +1564,59 @@ export default function KhoaHocPage() {
                               <input type="file" accept="image/*" disabled={qrUploading['qr_group_2']} className="hidden" onChange={(e) => handleQrUpload('qr_group_2', e)} />
                             </label>
                           )}
-                          {qrUploadError['qr_group_2'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_group_2']}</p>}
+                          {qrUploadError?.['qr_group_2'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_group_2']}</p>}
+                        </div>
+
+                        {/* QR Khuyến mãi Group 2 — luôn hiện, không phụ thuộc khuyến mãi đang active */}
+                        <div className="mt-1 pt-3 border-t border-amber-200">
+                            {activePromos.group_2 && (
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full uppercase tracking-wide">🎁 Đang có KM</span>
+                              <span className="text-[10px] text-amber-600 font-semibold">
+                                Giảm {activePromos.group_2.discount_type === 'percent'
+                                  ? `${activePromos.group_2.discount_value}%`
+                                  : `${activePromos.group_2.discount_value.toLocaleString('vi-VN')}đ`}
+                                {' → '}
+                                {activePromos.group_2.discount_type === 'percent'
+                                  ? formatVnd(Math.round((form.plans_config?.group_2?.price ?? form.price_group) * (1 - activePromos.group_2.discount_value / 100)))
+                                  : formatVnd(Math.max(0, (form.plans_config?.group_2?.price ?? form.price_group) - activePromos.group_2.discount_value))
+                                }
+                                {'/người'}
+                              </span>
+                            </div>
+                            )}
+                            <label className="block text-[10px] font-bold text-amber-600 uppercase mb-1">QR Sau Khuyến Mãi</label>
+                            {form.qr_group_2_promo ? (
+                              <div className="relative group rounded-xl overflow-hidden border border-amber-200 aspect-[2/1] w-full bg-amber-50 flex items-center justify-center">
+                                <img src={form.qr_group_2_promo} alt="QR Group 2 KM" className="w-full h-full object-contain p-2" />
+                                <button type="button" onClick={() => setForm((f) => ({ ...f, qr_group_2_promo: '' }))}
+                                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/85 hover:bg-red-600 text-white transition-colors cursor-pointer shadow-md">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ) : (
+                              <label className="flex flex-col items-center justify-center w-full aspect-[2/1] border-2 border-dashed border-amber-200 hover:border-amber-400 rounded-xl cursor-pointer bg-amber-50/30 hover:bg-amber-50 transition-all group text-center">
+                                <div className="flex flex-col items-center justify-center p-2">
+                                  {qrUploading['qr_group_2_promo'] ? (
+                                    <svg className="animate-spin h-6 w-6 text-amber-500" viewBox="0 0 24 24" fill="none">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                    </svg>
+                                  ) : (
+                                    <>
+                                      <svg className="w-5 h-5 text-amber-400 group-hover:text-amber-500 transition-colors mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                      </svg>
+                                      <span className="text-[11px] font-bold text-amber-600 group-hover:text-amber-700">Tải QR khuyến mãi</span>
+                                    </>
+                                  )}
+                                </div>
+                                <input type="file" accept="image/*" disabled={qrUploading['qr_group_2_promo']} className="hidden" onChange={(e) => handleQrUpload('qr_group_2_promo', e)} />
+                              </label>
+                            )}
+                            {qrUploadError?.['qr_group_2_promo'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_group_2_promo']}</p>}
                         </div>
                       </div>
                     </div>
@@ -1503,7 +1697,59 @@ export default function KhoaHocPage() {
                               <input type="file" accept="image/*" disabled={qrUploading['qr_group_4']} className="hidden" onChange={(e) => handleQrUpload('qr_group_4', e)} />
                             </label>
                           )}
-                          {qrUploadError['qr_group_4'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_group_4']}</p>}
+                          {qrUploadError?.['qr_group_4'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_group_4']}</p>}
+                        </div>
+
+                        {/* QR Khuyến mãi Group 4 — luôn hiện, không phụ thuộc khuyến mãi đang active */}
+                        <div className="mt-1 pt-3 border-t border-amber-200">
+                            {activePromos.group_4 && (
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full uppercase tracking-wide">🎁 Đang có KM</span>
+                              <span className="text-[10px] text-amber-600 font-semibold">
+                                Giảm {activePromos.group_4.discount_type === 'percent'
+                                  ? `${activePromos.group_4.discount_value}%`
+                                  : `${activePromos.group_4.discount_value.toLocaleString('vi-VN')}đ`}
+                                {' → '}
+                                {activePromos.group_4.discount_type === 'percent'
+                                  ? formatVnd(Math.round((form.plans_config?.group_4?.price ?? (form.price_group - 150000)) * (1 - activePromos.group_4.discount_value / 100)))
+                                  : formatVnd(Math.max(0, (form.plans_config?.group_4?.price ?? (form.price_group - 150000)) - activePromos.group_4.discount_value))
+                                }
+                                {'/người'}
+                              </span>
+                            </div>
+                            )}
+                            <label className="block text-[10px] font-bold text-amber-600 uppercase mb-1">QR Sau Khuyến Mãi</label>
+                            {form.qr_group_4_promo ? (
+                              <div className="relative group rounded-xl overflow-hidden border border-amber-200 aspect-[2/1] w-full bg-amber-50 flex items-center justify-center">
+                                <img src={form.qr_group_4_promo} alt="QR Group 4 KM" className="w-full h-full object-contain p-2" />
+                                <button type="button" onClick={() => setForm((f) => ({ ...f, qr_group_4_promo: '' }))}
+                                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/85 hover:bg-red-600 text-white transition-colors cursor-pointer shadow-md">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ) : (
+                              <label className="flex flex-col items-center justify-center w-full aspect-[2/1] border-2 border-dashed border-amber-200 hover:border-amber-400 rounded-xl cursor-pointer bg-amber-50/30 hover:bg-amber-50 transition-all group text-center">
+                                <div className="flex flex-col items-center justify-center p-2">
+                                  {qrUploading['qr_group_4_promo'] ? (
+                                    <svg className="animate-spin h-6 w-6 text-amber-500" viewBox="0 0 24 24" fill="none">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                    </svg>
+                                  ) : (
+                                    <>
+                                      <svg className="w-5 h-5 text-amber-400 group-hover:text-amber-500 transition-colors mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                      </svg>
+                                      <span className="text-[11px] font-bold text-amber-600 group-hover:text-amber-700">Tải QR khuyến mãi</span>
+                                    </>
+                                  )}
+                                </div>
+                                <input type="file" accept="image/*" disabled={qrUploading['qr_group_4_promo']} className="hidden" onChange={(e) => handleQrUpload('qr_group_4_promo', e)} />
+                              </label>
+                            )}
+                            {qrUploadError?.['qr_group_4_promo'] && <p className="text-[10px] text-red-500 font-semibold">{qrUploadError['qr_group_4_promo']}</p>}
                         </div>
                       </div>
                     </div>

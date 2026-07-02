@@ -1,6 +1,6 @@
-import { getAdminToken } from './auth';
+﻿import { getAdminToken } from './auth';
 
-const BASE = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api').replace(/\/$/, '');
+const BASE = (process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:3001/api').replace(/\/$/, '');
 
 // ── Response shape từ ResponseTransformInterceptor ────
 interface ApiEnvelope<T> {
@@ -89,6 +89,7 @@ export interface Registration {
   position?: string;
   referral: string;
   plan: string;
+  group_id?: string | null;
   created_at: string;
   course_id: string;
   courses?: { title: string; price?: number; price_group?: number } | null;
@@ -147,10 +148,23 @@ export interface Course {
   qr_individual?: string | null;
   qr_group_2?: string | null;
   qr_group_4?: string | null;
+  qr_early_bird_promo?: string | null;
+  qr_individual_promo?: string | null;
+  qr_group_2_promo?: string | null;
+  qr_group_4_promo?: string | null;
+  early_bird_deadline?: string | null;
   plans_config?: any;
   created_at: string;
   instructors?: { id: string; name: string } | null;
 }
+
+/** Promo đang active trả về từ GET /api/promo-codes/active */
+export interface ActivePromoInfo {
+  plan: string;
+  discount_type: 'percent' | 'fixed';
+  discount_value: number;
+}
+export type ActivePromoMap = Partial<Record<'early_bird' | 'individual' | 'group_2' | 'group_4', ActivePromoInfo>>;
 
 export interface CoursesPage {
   items: Course[];
@@ -174,6 +188,11 @@ export interface CourseFormInput {
   qr_individual?: string;
   qr_group_2?: string;
   qr_group_4?: string;
+  qr_early_bird_promo?: string;
+  qr_individual_promo?: string;
+  qr_group_2_promo?: string;
+  qr_group_4_promo?: string;
+  early_bird_deadline?: string;
   plans_config?: any;
 }
 
@@ -191,6 +210,17 @@ export async function getCourses(params: {
   if (params.status && params.status !== 'all') q.set('status', params.status);
   if (params.category) q.set('category', params.category);
   return adminFetch<CoursesPage>(`/courses?${q.toString()}`);
+}
+
+/** Lấy promo đang active theo từng gói của khóa học — dùng trong tab Cấu hình Đăng ký */
+export async function getActivePromos(course_id: string): Promise<ActivePromoMap> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('admin_access_token') : null;
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/promo-codes/active?course_id=${course_id}`,
+    { headers: { Authorization: `Bearer ${token ?? ''}` } },
+  );
+  if (!res.ok) return {};
+  return res.json() as Promise<ActivePromoMap>;
 }
 
 export async function createCourse(payload: CourseFormInput): Promise<Course> {

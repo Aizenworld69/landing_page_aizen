@@ -5,7 +5,7 @@ import { UpcomingCoursesSection } from '@/components/sections/home/UpcomingCours
 import { CompletedCoursesPreviewSection } from '@/components/sections/home/CompletedCoursesPreviewSection';
 import type { Course, PaginatedResponse } from '@aizen/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:3001/api';
 
 // Cache 60s — không cần real-time, dữ liệu khoá học thay đổi ít
 async function getUpcomingCourses(): Promise<Course[]> {

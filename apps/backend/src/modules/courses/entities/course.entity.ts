@@ -19,6 +19,11 @@ export interface Course {
   qr_individual?: string | null;
   qr_group_2?: string | null;
   qr_group_4?: string | null;
+  qr_early_bird_promo?: string | null;
+  qr_individual_promo?: string | null;
+  qr_group_2_promo?: string | null;
+  qr_group_4_promo?: string | null;
+  early_bird_deadline?: string | null;
   plans_config?: any;
   created_at: string;
 }

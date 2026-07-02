@@ -1,7 +1,7 @@
 import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/store/auth.store';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:3001/api';
 
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];

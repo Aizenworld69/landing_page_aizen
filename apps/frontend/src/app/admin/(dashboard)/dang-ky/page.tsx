@@ -42,16 +42,30 @@ function getAvatarBg(name: string): string {
   return bgs[Math.abs(hash) % bgs.length];
 }
 
-// Helper to get ticket type deterministically
-function getRegistrationTicketType(r: Registration): string {
-  if (r.plan === 'group') return 'Nhóm 2 người';
-  
+// Helper to get ticket type. Với đăng ký nhóm, lấy đúng số người trong nhóm (2 hoặc 4)
+// dựa trên group_id thay vì hard-code '2 người'.
+function getRegistrationTicketType(r: Registration, groupSizeMap: Map<string, number>): string {
+  if (r.plan === 'group') {
+    const size = r.group_id ? groupSizeMap.get(r.group_id) ?? 2 : 2;
+    return `Nhóm ${size} người`;
+  }
+
   let hash = 0;
   for (let i = 0; i < r.id.length; i++) {
     hash = r.id.charCodeAt(i) + ((hash << 5) - hash);
   }
   return Math.abs(hash) % 2 === 0 ? '1 người' : 'Early Bird';
 }
+
+// Bảng màu để tô nhóm — mỗi group_id được gán 1 màu cố định theo thứ tự xuất hiện
+const GROUP_COLORS = [
+  { dot: 'bg-sky-500', bg: 'bg-sky-50/60', border: 'border-l-sky-400', text: 'text-sky-700' },
+  { dot: 'bg-violet-500', bg: 'bg-violet-50/60', border: 'border-l-violet-400', text: 'text-violet-700' },
+  { dot: 'bg-emerald-500', bg: 'bg-emerald-50/60', border: 'border-l-emerald-400', text: 'text-emerald-700' },
+  { dot: 'bg-amber-500', bg: 'bg-amber-50/60', border: 'border-l-amber-400', text: 'text-amber-700' },
+  { dot: 'bg-rose-500', bg: 'bg-rose-50/60', border: 'border-l-rose-400', text: 'text-rose-700' },
+  { dot: 'bg-teal-500', bg: 'bg-teal-50/60', border: 'border-l-teal-400', text: 'text-teal-700' },
+];
 
 // Helper to get registration amount (default to course price or premium mockup value)
 function getRegistrationAmount(r: Registration): number {
@@ -126,7 +140,7 @@ export default function DangKyPage() {
     const rows = result.data.map((r) => {
       const statusVal = getRegistrationStatus(r.id);
       const statusLabel = statusVal === 'success' ? 'Đã thanh toán' : statusVal === 'pending' ? 'Chờ xử lý' : 'Thất bại';
-      const ticketType = getRegistrationTicketType(r);
+      const ticketType = getRegistrationTicketType(r, groupSizeMap);
       const amount = getRegistrationAmount(r);
       return [
         r.id,
@@ -159,6 +173,33 @@ export default function DangKyPage() {
     if (selectedStatus === 'all') return result.data;
     return result.data.filter((r) => getRegistrationStatus(r.id) === selectedStatus);
   }, [result?.data, selectedStatus]);
+
+  // Gom nhóm các đăng ký theo group_id: đếm số người/nhóm, gán màu cố định theo
+  // thứ tự xuất hiện, và liệt kê tên các thành viên khác cùng nhóm (để tooltip).
+  const { groupSizeMap, groupColorMap, groupMatesMap } = useMemo(() => {
+    const sizeMap = new Map<string, number>();
+    const colorMap = new Map<string, typeof GROUP_COLORS[number]>();
+    const matesMap = new Map<string, string[]>();
+    const data = result?.data ?? [];
+
+    data.forEach((r) => {
+      if (!r.group_id) return;
+      sizeMap.set(r.group_id, (sizeMap.get(r.group_id) ?? 0) + 1);
+      if (!colorMap.has(r.group_id)) {
+        colorMap.set(r.group_id, GROUP_COLORS[colorMap.size % GROUP_COLORS.length]);
+      }
+    });
+
+    data.forEach((r) => {
+      if (!r.group_id) return;
+      const mates = data
+        .filter((other) => other.group_id === r.group_id && other.id !== r.id)
+        .map((other) => other.full_name);
+      matesMap.set(r.id, mates);
+    });
+
+    return { groupSizeMap: sizeMap, groupColorMap: colorMap, groupMatesMap: matesMap };
+  }, [result?.data]);
 
   // Derived Stat Cards Values
   const totalCount = stats?.total ?? 0;
@@ -383,11 +424,16 @@ export default function DangKyPage() {
               ) : (
                 filteredRegistrations.map((r) => {
                   const statusVal = getRegistrationStatus(r.id);
-                  const ticketType = getRegistrationTicketType(r);
+                  const ticketType = getRegistrationTicketType(r, groupSizeMap);
+                  const groupColor = r.group_id ? groupColorMap.get(r.group_id) : undefined;
+                  const groupMates = r.group_id ? (groupMatesMap.get(r.id) ?? []) : [];
                   const amount = getRegistrationAmount(r);
 
                   return (
-                    <tr key={r.id} className="hover:bg-slate-50/50 transition-colors group">
+                    <tr
+                      key={r.id}
+                      className={`hover:bg-slate-50/50 transition-colors group ${groupColor ? `border-l-4 ${groupColor.border} ${groupColor.bg}` : ''}`}
+                    >
                       {/* Student Info with Initials Avatar */}
                       <td className="px-6 py-4.5 whitespace-nowrap">
                         <div className="flex items-center gap-3">
@@ -415,9 +461,20 @@ export default function DangKyPage() {
                         {r.position || '—'}
                       </td>
 
-                      {/* Ticket Type */}
+                      {/* Ticket Type + nhom cung ai */}
                       <td className="px-6 py-4.5 text-slate-600 font-semibold whitespace-nowrap">
-                        {ticketType}
+                        <div className="flex flex-col gap-1">
+                          <span>{ticketType}</span>
+                          {groupColor && (
+                            <span
+                              title={groupMates.length ? `Cung nhom voi: ${groupMates.join(", ")}` : undefined}
+                              className={`inline-flex items-center gap-1 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold ${groupColor.bg} ${groupColor.text} border border-current/10 cursor-help`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${groupColor.dot}`} />
+                              {groupMates.length > 0 ? `+${groupMates.length} nguoi khac` : "Nhom"}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Course Title */}

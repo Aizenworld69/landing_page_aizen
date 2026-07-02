@@ -11,6 +11,7 @@ export interface CreateRegistrationDto {
   position?: string;
   referral: string;
   plan: 'individual' | 'group';
+  promoCode?: string;
 }
 
 export async function createRegistration(
@@ -27,6 +28,7 @@ export async function createRegistration(
       position: dto.position,
       referral: dto.referral,
       plan: dto.plan,
+      promoCode: dto.promoCode || undefined,
     },
   );
   return data;
@@ -45,6 +47,7 @@ export interface CreateGroupRegistrationDto {
   courseId: string;
   referral: string;
   members: GroupMemberDto[];
+  promoCode?: string;
 }
 
 export async function createGroupRegistration(
@@ -55,6 +58,7 @@ export async function createGroupRegistration(
     {
       course_id: dto.courseId,
       referral: dto.referral,
+      promoCode: dto.promoCode || undefined,
       members: dto.members.map((m) => ({
         full_name: m.fullName,
         phone: m.phone,
@@ -66,3 +70,25 @@ export async function createGroupRegistration(
   );
   return data;
 }
+
+// ─── Validate promo code (public, không tốn lượt) ──────
+export interface PromoValidateResult {
+  valid: boolean;
+  message: string;
+  discount_type?: 'percent' | 'fixed';
+  discount_value?: number;
+  plan?: string;
+}
+
+export async function validatePromoCode(
+  code: string,
+  courseId: string,
+  plan: string,
+): Promise<PromoValidateResult> {
+  const { data } = await apiClient.post<{ data: PromoValidateResult }>(
+    '/promo-codes/validate',
+    { code, course_id: courseId, plan },
+  );
+  return data.data;
+}
+

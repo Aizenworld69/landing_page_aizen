@@ -54,7 +54,7 @@ export class CreateGroupRegistrationDto {
   @IsArray()
   @ValidateNested({ each: true })
   @ArrayMinSize(2, { message: 'Đăng ký nhóm cần ít nhất 2 người' })
-  @ArrayMaxSize(2, { message: 'Đăng ký nhóm tối đa 2 người' })
+  @ArrayMaxSize(10, { message: 'Đăng ký nhóm tối đa 10 người' })
   @Type(() => GroupMemberDto)
   members: GroupMemberDto[];
 

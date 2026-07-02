@@ -35,6 +35,18 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: { enableImplicitConversion: true },
+      exceptionFactory: (errors) => {
+        const detail = errors.map((e) => ({
+          field: e.property,
+          value: e.value,
+          constraints: e.constraints,
+        }));
+        logger.warn(`[ValidationPipe] Failed fields: ${JSON.stringify(detail)}`);
+        const messages = errors.map((e) => Object.values(e.constraints ?? {}).join(', '));
+        const { BadRequestException } = require('@nestjs/common');
+        return new BadRequestException(messages);
+      },
     }),
   );
 

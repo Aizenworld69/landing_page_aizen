@@ -93,7 +93,12 @@ export default async function CourseDetailPage({
             qrIndividual={course.qr_individual ?? undefined}
             qrGroup2={course.qr_group_2 ?? undefined}
             qrGroup4={course.qr_group_4 ?? undefined}
+            qrEarlyBirdPromo={course.qr_early_bird_promo ?? undefined}
+            qrIndividualPromo={course.qr_individual_promo ?? undefined}
+            qrGroup2Promo={course.qr_group_2_promo ?? undefined}
+            qrGroup4Promo={course.qr_group_4_promo ?? undefined}
             plansConfig={course.plans_config ?? undefined}
+            earlyBirdDeadline={course.early_bird_deadline ?? undefined}
           />
         </div>
       </main>

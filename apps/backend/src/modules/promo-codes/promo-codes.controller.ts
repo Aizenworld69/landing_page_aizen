@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -28,16 +29,30 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 @ApiTags('PromoCodes')
 @Controller('promo-codes')
 export class PromoCodesController {
+  private readonly logger = new Logger(PromoCodesController.name);
   constructor(private readonly promoCodesService: PromoCodesService) {}
 
   // ─── Public ───────────────────────────────────────────────────────
+  /** Admin gọi để biết gói nào của khóa học đang có promo active */
+  @Get('active')
+  @ApiOperation({ summary: 'Lấy danh sách promo đang active cho từng gói của 1 khóa học' })
+  @ApiQuery({ name: 'course_id', required: true, type: String })
+  getActive(@Query('course_id') course_id: string) {
+    return this.promoCodesService.getActiveByCourseId(course_id);
+  }
+
   /** Khách hàng gọi để xem trước mức giảm giá, KHÔNG tốn lượt dùng */
   @Post('validate')
   @Throttle({ default: { limit: 20, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Kiểm tra mã khuyến mãi (public, không tốn lượt)' })
   validate(@Body() dto: ValidatePromoCodeDto) {
-    return this.promoCodesService.validate(dto.code, dto.course_id, dto.plan);
+    const VALID_PLANS = ['early_bird', 'individual', 'group_2', 'group_4'] as const;
+    type PlanType = typeof VALID_PLANS[number];
+    if (!VALID_PLANS.includes(dto.plan as PlanType)) {
+      return { valid: false, message: 'Gói đăng ký không hợp lệ' };
+    }
+    return this.promoCodesService.validate(dto.code, dto.course_id, dto.plan as PlanType);
   }
 
   // ─── Admin ────────────────────────────────────────────────────────
@@ -66,6 +81,7 @@ export class PromoCodesController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: '[Admin] Tạo mã khuyến mãi mới' })
   adminCreate(@Body() dto: CreatePromoCodeDto) {
+    this.logger.debug(`[adminCreate] DTO received: ${JSON.stringify(dto)}`);
     return this.promoCodesService.adminCreate(dto);
   }
 

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 import { useState, useEffect, useCallback } from 'react';
 import { formatCurrency } from '@/lib/utils/format';
-import { createRegistration, createGroupRegistration } from '@/lib/api/registrations.api';
+import { createRegistration, createGroupRegistration, validatePromoCode } from '@/lib/api/registrations.api';
 
 // ─── Types ────────────────────────────────────────────
 interface CoursePlanSectionProps {
@@ -16,7 +16,13 @@ interface CoursePlanSectionProps {
   qrIndividual?: string;
   qrGroup2?: string;
   qrGroup4?: string;
+  /** QR sau khuyến mãi — nếu có thì hiển thị thay QR gốc */
+  qrEarlyBirdPromo?: string;
+  qrIndividualPromo?: string;
+  qrGroup2Promo?: string;
+  qrGroup4Promo?: string;
   plansConfig?: any;
+  earlyBirdDeadline?: string | null;
 }
 
 type PlanKey = 'early_bird' | 'individual' | 'group_2' | 'group_4';
@@ -156,11 +162,12 @@ interface RegistrationModalProps {
   plan: PlanConfig;
   courseId: string;
   courseTitle: string;
-  qrCodeUrl?: string;
+  qrNormalUrl?: string;
+  qrPromoUrl?: string;
   onClose: () => void;
 }
 
-function RegistrationModal({ plan, courseId, courseTitle, qrCodeUrl, onClose }: RegistrationModalProps) {
+function RegistrationModal({ plan, courseId, courseTitle, qrNormalUrl, qrPromoUrl, onClose }: RegistrationModalProps) {
   const [members, setMembers] = useState<MemberForm[]>(
     Array.from({ length: plan.memberCount }, emptyMember),
   );
@@ -170,6 +177,12 @@ function RegistrationModal({ plan, courseId, courseTitle, qrCodeUrl, onClose }: 
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+
+  // States cho mã khuyến mãi
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [isCheckingPromo, setIsCheckingPromo] = useState(false);
+  const [appliedPromo, setAppliedPromo] = useState<any>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
 
   // Lock body scroll
   useEffect(() => {
@@ -209,10 +222,40 @@ function RegistrationModal({ plan, courseId, courseTitle, qrCodeUrl, onClose }: 
     return valid;
   }
 
+  async function handleApplyPromo() {
+    if (!promoCodeInput.trim()) return;
+    setIsCheckingPromo(true);
+    setPromoError(null);
+    setAppliedPromo(null);
+    try {
+      const result = await validatePromoCode(
+        promoCodeInput.trim().toUpperCase(),
+        courseId,
+        plan.key,
+      );
+      if (result.valid) {
+        setAppliedPromo(result);
+      } else {
+        setPromoError(result.message);
+      }
+    } catch (err) {
+      setPromoError('Không thể kiểm tra mã khuyến mãi, vui lòng thử lại.');
+    } finally {
+      setIsCheckingPromo(false);
+    }
+  }
+
+  function handleRemovePromo() {
+    setPromoCodeInput('');
+    setAppliedPromo(null);
+    setPromoError(null);
+  }
+
   async function handleSubmit() {
     if (!validate()) return;
     setIsLoading(true);
     setApiError(null);
+    const promoCode = appliedPromo ? promoCodeInput.trim().toUpperCase() : undefined;
     try {
       if (plan.memberCount === 1) {
         const m = members[0]!;
@@ -221,6 +264,7 @@ function RegistrationModal({ plan, courseId, courseTitle, qrCodeUrl, onClose }: 
           fullName: m.fullName, phone: m.phone, email: m.email,
           company: m.company || undefined, position: m.position || undefined,
           referral: m.referral,
+          promoCode,
         });
       } else {
         await createGroupRegistration({
@@ -230,6 +274,7 @@ function RegistrationModal({ plan, courseId, courseTitle, qrCodeUrl, onClose }: 
             fullName: m.fullName, phone: m.phone, email: m.email,
             company: m.company || undefined, position: m.position || undefined,
           })),
+          promoCode,
         });
       }
       setSuccess(true);
@@ -240,7 +285,19 @@ function RegistrationModal({ plan, courseId, courseTitle, qrCodeUrl, onClose }: 
     }
   }
 
-  const discount = plan.originalTotal - plan.totalPrice;
+  // Tính giá sau giảm
+  const discountFromPlan = plan.originalTotal - plan.totalPrice;
+  let discountFromPromo = 0;
+
+  if (appliedPromo?.valid && appliedPromo.discount_type && appliedPromo.discount_value) {
+    if (appliedPromo.discount_type === 'percent') {
+      discountFromPromo = Math.round((plan.totalPrice * appliedPromo.discount_value) / 100);
+    } else {
+      discountFromPromo = Math.min(appliedPromo.discount_value, plan.totalPrice);
+    }
+  }
+
+  const finalPrice = Math.max(0, plan.totalPrice - discountFromPromo);
 
   return (
     /* Backdrop */
@@ -283,11 +340,20 @@ function RegistrationModal({ plan, courseId, courseTitle, qrCodeUrl, onClose }: 
               <p className="text-white font-bold text-lg mb-1">Đăng ký thành công!</p>
               <p className="text-slate-300 text-sm mb-4">Vui lòng quét mã QR dưới đây để hoàn tất thanh toán học phí:</p>
               
-              {qrCodeUrl ? (
+              {appliedPromo && qrPromoUrl ? (
                 <div className="bg-white p-3 rounded-2xl border border-white/10 shadow-lg max-w-[240px] w-full aspect-square flex items-center justify-center mb-4">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={qrCodeUrl}
+                    src={qrPromoUrl}
+                    alt="Mã QR Thanh toán (Khuyến mãi)"
+                    className="w-full h-full object-contain rounded-xl"
+                  />
+                </div>
+              ) : qrNormalUrl ? (
+                <div className="bg-white p-3 rounded-2xl border border-white/10 shadow-lg max-w-[240px] w-full aspect-square flex items-center justify-center mb-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={qrNormalUrl}
                     alt="Mã QR Thanh toán"
                     className="w-full h-full object-contain rounded-xl"
                   />
@@ -353,21 +419,99 @@ function RegistrationModal({ plan, courseId, courseTitle, qrCodeUrl, onClose }: 
                 </div>
               ))}
 
+              {/* Promo Code Input */}
+              <div className="rounded-xl border border-white/8 bg-white/3 p-4 space-y-3">
+                <label htmlFor="promo-code-input" className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  🎟️ Có mã khuyến mãi? <span className="text-slate-500 font-normal">(Không bắt buộc)</span>
+                </label>
+
+                {appliedPromo ? (
+                  <div className="flex items-center justify-between px-3 py-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <div>
+                        <p className="text-emerald-300 text-sm font-bold tracking-wider">{promoCodeInput.trim().toUpperCase()}</p>
+                        <p className="text-emerald-400/80 text-xs">
+                          {appliedPromo.discount_type === 'percent'
+                            ? `Đã áp dụng giảm ${appliedPromo.discount_value}%`
+                            : `Đã áp dụng giảm ${formatCurrency(appliedPromo.discount_value)}`}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemovePromo}
+                      className="text-slate-400 hover:text-red-400 transition-colors p-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      id="promo-code-input"
+                      type="text"
+                      placeholder="Ví dụ: AIZEN50"
+                      value={promoCodeInput}
+                      onChange={(e) => {
+                        setPromoCodeInput(e.target.value.toUpperCase());
+                        setPromoError(null);
+                      }}
+                      style={{ color: '#ffffff', caretColor: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+                      className="flex-1 px-3 py-2 rounded-lg border border-white/15 bg-slate-700/60 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60 tracking-wider font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyPromo}
+                      disabled={isCheckingPromo || !promoCodeInput.trim()}
+                      className="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-1.5"
+                    >
+                      {isCheckingPromo ? (
+                        <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                      ) : 'Áp dụng'}
+                    </button>
+                  </div>
+                )}
+                {promoError && (
+                  <p className="text-xs text-red-400 flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    {promoError}
+                  </p>
+                )}
+              </div>
+
               {/* Price summary */}
               <div className="rounded-xl border border-white/8 bg-white/3 px-4 py-3 space-y-2">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-400">Giá gốc:</span>
                   <span className="text-slate-500 line-through">{formatCurrency(plan.originalTotal)}</span>
                 </div>
-                {discount > 0 && (
+                {discountFromPlan > 0 && (
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-slate-400">Giảm giá ({plan.label}):</span>
-                    <span className="text-emerald-400 font-semibold">-{formatCurrency(discount)}</span>
+                    <span className="text-emerald-400 font-semibold">-{formatCurrency(discountFromPlan)}</span>
+                  </div>
+                )}
+                {discountFromPromo > 0 && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      🎟️ Mã KM ({promoCodeInput.trim().toUpperCase()}):
+                    </span>
+                    <span className="text-emerald-400 font-semibold">-{formatCurrency(discountFromPromo)}</span>
                   </div>
                 )}
                 <div className="border-t border-white/8 pt-2 flex justify-between items-center">
                   <span className="text-white font-semibold text-sm">Tổng thanh toán:</span>
-                  <span className="text-sky-300 font-extrabold text-lg">{formatCurrency(plan.totalPrice)}</span>
+                  <span className="text-sky-300 font-extrabold text-lg">{formatCurrency(finalPrice)}</span>
                 </div>
               </div>
 
@@ -406,13 +550,24 @@ function RegistrationModal({ plan, courseId, courseTitle, qrCodeUrl, onClose }: 
   );
 }
 
+function formatDate(dateStr: string): string {
+  try {
+    const d = new Date(dateStr);
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  } catch {
+    return '';
+  }
+}
+
 // ─── Plan Card ────────────────────────────────────────
 interface PlanCardProps {
   plan: PlanConfig;
+  disabled?: boolean;
+  earlyBirdDeadline?: string | null;
   onClick: () => void;
 }
 
-function PlanCard({ plan, onClick }: PlanCardProps) {
+function PlanCard({ plan, disabled, earlyBirdDeadline, onClick }: PlanCardProps) {
   const isEarlyBird = plan.key === 'early_bird';
   const isGroup4 = plan.key === 'group_4';
   const isGroup2 = plan.key === 'group_2';
@@ -439,10 +594,10 @@ function PlanCard({ plan, onClick }: PlanCardProps) {
   return (
     <div
       className={`relative flex flex-col rounded-2xl overflow-hidden h-full ${
-        isEarlyBird ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer group'
+        disabled ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer group'
       }`}
       style={{
-        background: isEarlyBird
+        background: disabled
           ? 'rgba(15,25,40,0.6)'
           : 'rgba(15,28,48,0.8)',
         border: `1px solid ${getCardBorder()}`,
@@ -451,9 +606,9 @@ function PlanCard({ plan, onClick }: PlanCardProps) {
         transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
         minHeight: 200,
       }}
-      onClick={isEarlyBird ? undefined : onClick}
+      onClick={disabled ? undefined : onClick}
       onMouseEnter={(e) => {
-        if (isEarlyBird) return;
+        if (disabled) return;
         const el = e.currentTarget as HTMLElement;
         el.style.transform = 'translateY(-5px)';
         if (isGroup4) el.style.boxShadow = '0 12px 32px rgba(16,185,129,0.2)';
@@ -461,23 +616,35 @@ function PlanCard({ plan, onClick }: PlanCardProps) {
         else el.style.boxShadow = '0 12px 32px rgba(14,165,233,0.15)';
       }}
       onMouseLeave={(e) => {
-        if (isEarlyBird) return;
+        if (disabled) return;
         const el = e.currentTarget as HTMLElement;
         el.style.transform = 'translateY(0)';
         el.style.boxShadow = getCardGlow();
       }}
     >
-      {/* Badge strip */}
-      {plan.badge && (
-        <div
-          className="py-1.5 text-center text-[10px] font-black uppercase tracking-[0.15em] text-white"
-          style={{ background: getBadgeGradient() }}
-        >
-          {plan.badge.text}
-        </div>
-      )}
-
-      <div className={`flex flex-col flex-1 p-5 ${plan.badge ? 'pt-4' : 'pt-5'}`}>
+      <div className="flex flex-col flex-1 p-5 pt-4">
+        {/* Dynamic Badge Pill Tags */}
+        {(plan.badge || (isEarlyBird && earlyBirdDeadline)) && (
+          <div className="flex flex-wrap items-center gap-1.5 mb-3">
+            {plan.badge && (
+              <span
+                className="px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white rounded-full shadow-sm"
+                style={{ background: getBadgeGradient() }}
+              >
+                {plan.badge.text}
+              </span>
+            )}
+            {isEarlyBird && earlyBirdDeadline && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-950 bg-amber-400 rounded-full border border-amber-300 shadow-sm shadow-amber-400/20">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-600 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
+                </span>
+                Đến {formatDate(earlyBirdDeadline)}
+              </span>
+            )}
+          </div>
+        )}
         {/* Icon */}
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
@@ -516,7 +683,7 @@ function PlanCard({ plan, onClick }: PlanCardProps) {
             {formatCurrency(plan.totalPrice)}
           </p>
 
-          {isEarlyBird ? (
+          {disabled ? (
             <div className="w-full py-2.5 rounded-xl border border-white/10 text-slate-500 text-xs font-semibold text-center">
               Đã hết hạn đăng ký
             </div>
@@ -555,11 +722,19 @@ export function CoursePlanSection({
   qrIndividual,
   qrGroup2,
   qrGroup4,
+  qrEarlyBirdPromo,
+  qrIndividualPromo,
+  qrGroup2Promo,
+  qrGroup4Promo,
   plansConfig,
+  earlyBirdDeadline,
 }: CoursePlanSectionProps) {
   const earlyBirdPrice = plansConfig?.early_bird?.price ?? Math.round(price * 0.73);
   const earlyBirdLabel = plansConfig?.early_bird?.label || 'Early Bird';
   const earlyBirdSublabel = plansConfig?.early_bird?.sublabel || '1 người · Ưu đãi có hạn';
+
+  const plansList = plansConfig || {};
+  const isExpired = earlyBirdDeadline ? new Date(earlyBirdDeadline) < new Date() : false;
 
   const individualPrice = plansConfig?.individual?.price ?? price;
   const individualLabel = plansConfig?.individual?.label || '1 người';
@@ -663,7 +838,12 @@ export function CoursePlanSection({
               viewport={{ once: true }}
               transition={{ duration: 0.45, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
             >
-              <PlanCard plan={plan} onClick={() => setActivePlan(plan)} />
+              <PlanCard
+                plan={plan}
+                disabled={plan.key === 'early_bird' && isExpired}
+                earlyBirdDeadline={earlyBirdDeadline}
+                onClick={() => setActivePlan(plan)}
+              />
             </motion.div>
           ))}
         </div>
@@ -675,7 +855,7 @@ export function CoursePlanSection({
           plan={activePlan}
           courseId={courseId}
           courseTitle={courseTitle}
-          qrCodeUrl={
+          qrNormalUrl={
             activePlan.key === 'early_bird'
               ? qrEarlyBird
               : activePlan.key === 'individual'
@@ -683,6 +863,15 @@ export function CoursePlanSection({
               : activePlan.key === 'group_2'
               ? qrGroup2
               : qrGroup4
+          }
+          qrPromoUrl={
+            activePlan.key === 'early_bird'
+              ? qrEarlyBirdPromo
+              : activePlan.key === 'individual'
+              ? qrIndividualPromo
+              : activePlan.key === 'group_2'
+              ? qrGroup2Promo
+              : qrGroup4Promo
           }
           onClose={() => setActivePlan(null)}
         />

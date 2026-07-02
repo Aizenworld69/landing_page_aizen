@@ -1,9 +1,13 @@
-﻿'use client';
+'use client';
 
-import { useState } from 'react';
-import { Input } from '@/components/ui/Input';
+import { useState, useCallback } from 'react';
 import { formatCurrency } from '@/lib/utils/format';
-import { createRegistration, createGroupRegistration } from '@/lib/api/registrations.api';
+import {
+  createRegistration,
+  createGroupRegistration,
+  validatePromoCode,
+  type PromoValidateResult,
+} from '@/lib/api/registrations.api';
 
 // ─── Types ───────────────────────────────────────────
 interface RegistrationFormProps {
@@ -22,6 +26,7 @@ interface PlanConfig {
   originalPriceLabel?: string;
   memberCount: number;
   badge?: { text: string; color: string };
+  basePrice: number; // Giá thực để tính giảm
 }
 
 interface MemberForm {
@@ -51,13 +56,7 @@ const emptyErrors = (): MemberErrors => ({});
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // ─── Plan card ────────────────────────────────────────
-function PlanCard({
-  plan, selected, onClick,
-}: {
-  plan: PlanConfig;
-  selected: boolean;
-  onClick: () => void;
-}) {
+function PlanCard({ plan, selected, onClick }: { plan: PlanConfig; selected: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -69,13 +68,10 @@ function PlanCard({
       }`}
     >
       {plan.badge && (
-        <span
-          className={`absolute -top-2.5 left-3 px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wide text-white ${plan.badge.color}`}
-        >
+        <span className={`absolute -top-2.5 left-3 px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wide text-white ${plan.badge.color}`}>
           {plan.badge.text}
         </span>
       )}
-
       <div className="flex items-center justify-between">
         <div>
           <p className="font-semibold text-white text-sm">{plan.label}</p>
@@ -88,8 +84,6 @@ function PlanCard({
           )}
         </div>
       </div>
-
-      {/* Selected indicator */}
       {selected && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-sky-500 flex items-center justify-center">
           <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,19 +115,23 @@ function PersonSection({ index, total, member, errors, onChange }: PersonSection
           <p className="text-sm font-semibold text-white">Thông tin người {index + 1}</p>
         </div>
       )}
-      <DarkInput id={`fullName_${index}`} label="Họ và tên" placeholder="Nhập họ và tên"
+      <DarkInput id={`fullName_${index}`} label="Họ và Tên" placeholder="Nguyễn Văn A"
         value={member.fullName} error={errors.fullName} required
         onChange={(e) => onChange('fullName', e.target.value)} />
-      <DarkInput id={`phone_${index}`} label="Số điện thoại" placeholder="Nhập số điện thoại" type="tel"
-        value={member.phone} error={errors.phone} required
-        onChange={(e) => onChange('phone', e.target.value)} />
-      <DarkInput id={`email_${index}`} label="Email" placeholder="Nhập địa chỉ email" type="email"
-        value={member.email} error={errors.email} required
-        onChange={(e) => onChange('email', e.target.value)} />
-      <DarkInput id={`company_${index}`} label="Công ty/Tổ chức" placeholder="Nhập tên công ty"
-        value={member.company} onChange={(e) => onChange('company', e.target.value)} />
-      <DarkInput id={`position_${index}`} label="Chức vụ" placeholder="VD: Giám đốc, Trưởng phòng..."
-        value={member.position} onChange={(e) => onChange('position', e.target.value)} />
+      <div className="grid grid-cols-2 gap-3">
+        <DarkInput id={`phone_${index}`} label="Số điện thoại" placeholder="090 xxx xxx" type="tel"
+          value={member.phone} error={errors.phone} required
+          onChange={(e) => onChange('phone', e.target.value)} />
+        <DarkInput id={`email_${index}`} label="Email" placeholder="email@example.com" type="email"
+          value={member.email} error={errors.email} required
+          onChange={(e) => onChange('email', e.target.value)} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <DarkInput id={`company_${index}`} label="Tên Công Ty" placeholder="Công ty của bạn"
+          value={member.company} onChange={(e) => onChange('company', e.target.value)} />
+        <DarkInput id={`position_${index}`} label="Chức vụ" placeholder="Chọn vị trí..."
+          value={member.position} onChange={(e) => onChange('position', e.target.value)} />
+      </div>
     </div>
   );
 }
@@ -185,37 +183,211 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
   );
 }
 
+// ─── Promo Code Input ─────────────────────────────────
+interface PromoCodeInputProps {
+  courseId: string;
+  plan: string;
+  basePrice: number;
+  onApplied: (result: PromoValidateResult | null) => void;
+}
+
+function PromoCodeInput({ courseId, plan, basePrice, onApplied }: PromoCodeInputProps) {
+  const [code, setCode] = useState('');
+  const [isChecking, setIsChecking] = useState(false);
+  const [applied, setApplied] = useState<PromoValidateResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const discountAmount = applied?.valid && applied.discount_type && applied.discount_value
+    ? applied.discount_type === 'percent'
+      ? Math.round((basePrice * applied.discount_value) / 100)
+      : Math.min(applied.discount_value, basePrice)
+    : 0;
+
+  async function handleApply() {
+    if (!code.trim()) return;
+    setIsChecking(true);
+    setError(null);
+    setApplied(null);
+    onApplied(null);
+    try {
+      const result = await validatePromoCode(code.trim().toUpperCase(), courseId, plan);
+      if (result.valid) {
+        setApplied(result);
+        onApplied(result);
+      } else {
+        setError(result.message);
+      }
+    } catch {
+      setError('Không thể kiểm tra mã, thử lại sau.');
+    } finally {
+      setIsChecking(false);
+    }
+  }
+
+  function handleRemove() {
+    setCode('');
+    setApplied(null);
+    setError(null);
+    onApplied(null);
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-xs font-medium text-slate-300">
+        Mã khuyến mãi
+        <span className="ml-1.5 text-sky-400/70 font-normal">(không bắt buộc)</span>
+      </label>
+
+      {applied?.valid ? (
+        /* Applied state */
+        <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10">
+          <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+          </svg>
+          <div className="flex-1 min-w-0">
+            <p className="text-emerald-300 text-sm font-bold tracking-wider">{code.toUpperCase()}</p>
+            <p className="text-emerald-400/80 text-xs">
+              {applied.discount_type === 'percent'
+                ? `Giảm ${applied.discount_value}% · Tiết kiệm ${formatCurrency(discountAmount)}`
+                : `Giảm cố định ${formatCurrency(discountAmount)}`}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRemove}
+            className="text-slate-400 hover:text-red-400 transition-colors flex-shrink-0 p-0.5"
+            aria-label="Xóa mã"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      ) : (
+        /* Input state */
+        <div className="flex gap-2">
+          <input
+            id="promo-code-input"
+            type="text"
+            value={code}
+            placeholder="Nhập mã VD: AIZEN50"
+            onChange={(e) => { setCode(e.target.value.toUpperCase()); setError(null); }}
+            onKeyDown={(e) => e.key === 'Enter' && handleApply()}
+            style={{ color: '#ffffff', caretColor: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+            className={`flex-1 min-w-0 px-3.5 py-2.5 rounded-lg border bg-slate-700/60 text-white text-sm font-mono tracking-widest placeholder:text-slate-500 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-sky-500/60 transition-colors ${
+              error ? 'border-red-400/60' : 'border-white/15 hover:border-white/25'
+            }`}
+          />
+          <button
+            type="button"
+            onClick={handleApply}
+            disabled={isChecking || !code.trim()}
+            className="px-4 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-1.5 flex-shrink-0"
+          >
+            {isChecking ? (
+              <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : 'Áp dụng'}
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <div className="flex items-center gap-1.5 text-red-400 text-xs">
+          <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          {error}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Price Summary ─────────────────────────────────────
+function PriceSummary({
+  basePrice,
+  promo,
+}: {
+  basePrice: number;
+  promo: PromoValidateResult | null;
+}) {
+  const discountAmount = promo?.valid && promo.discount_type && promo.discount_value
+    ? promo.discount_type === 'percent'
+      ? Math.round((basePrice * promo.discount_value) / 100)
+      : Math.min(promo.discount_value, basePrice)
+    : 0;
+
+  const finalPrice = Math.max(0, basePrice - discountAmount);
+  const hasDiscount = discountAmount > 0;
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 space-y-1.5">
+      <div className="flex justify-between items-center text-sm text-slate-400">
+        <span>Giá gốc:</span>
+        <span className={hasDiscount ? 'line-through text-slate-500' : 'text-white font-semibold'}>
+          {formatCurrency(basePrice)}
+        </span>
+      </div>
+
+      {hasDiscount && (
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-emerald-400 flex items-center gap-1">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            Khuyến mãi:
+          </span>
+          <span className="text-emerald-400 font-semibold">-{formatCurrency(discountAmount)}</span>
+        </div>
+      )}
+
+      <div className="border-t border-white/10 pt-1.5 flex justify-between items-center">
+        <span className="text-sm font-semibold text-white">Tổng thanh toán:</span>
+        <div className="text-right">
+          <span className="text-lg font-extrabold text-sky-300">{formatCurrency(finalPrice)}</span>
+          {hasDiscount && (
+            <p className="text-[10px] text-emerald-400 text-right">
+              Tiết kiệm {formatCurrency(discountAmount)}!
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────
 export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFormProps) {
-  const group4Total = courseId === '9a8b7c6d-5e4f-3a2b-1c0d-9e8d7c6b5a4f' || price === 1300000
-    ? 3800000
-    : Math.round((priceGroup - 150000) * 4);
+  const group4Price = Math.round(priceGroup * 1.8);
 
   const PLANS: PlanConfig[] = [
     {
       key: 'early_bird', label: 'Early Bird', sublabel: '1 người · Ưu đãi có hạn',
       priceLabel: formatCurrency(Math.round(price * 0.73)),
       originalPriceLabel: formatCurrency(price),
-      memberCount: 1,
+      memberCount: 1, basePrice: Math.round(price * 0.73),
       badge: { text: 'SỐ LƯỢNG CÓ HẠN', color: 'bg-amber-500' },
     },
     {
       key: 'individual', label: '1 người', sublabel: 'Đăng ký cá nhân',
       priceLabel: formatCurrency(price),
-      memberCount: 1,
+      memberCount: 1, basePrice: price,
     },
     {
       key: 'group_2', label: 'Nhóm 2 người', sublabel: `${formatCurrency(priceGroup)}/người`,
       priceLabel: formatCurrency(priceGroup * 2),
       originalPriceLabel: formatCurrency(price * 2),
-      memberCount: 2,
+      memberCount: 2, basePrice: priceGroup * 2,
       badge: { text: 'HOT NHẤT', color: 'bg-sky-500' },
     },
     {
-      key: 'group_4', label: 'Nhóm 4 người', sublabel: `${formatCurrency(Math.round(priceGroup * 1.8 / 4))}/người`,
-      priceLabel: formatCurrency(Math.round(priceGroup * 1.8)),
+      key: 'group_4', label: 'Nhóm 4 người', sublabel: `${formatCurrency(Math.round(group4Price / 4))}/người`,
+      priceLabel: formatCurrency(group4Price),
       originalPriceLabel: formatCurrency(price * 4),
-      memberCount: 4,
+      memberCount: 4, basePrice: group4Price,
       badge: { text: 'TIẾT KIỆM 24%', color: 'bg-emerald-500' },
     },
   ];
@@ -229,6 +401,7 @@ export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFo
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<PromoValidateResult | null>(null);
 
   const totalSteps = selectedPlan.memberCount;
   const isMulti = totalSteps > 1;
@@ -242,6 +415,7 @@ export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFo
     setReferral('');
     setReferralError(undefined);
     setApiError(null);
+    setAppliedPromo(null);
   }
 
   function updateMember(idx: number, field: keyof MemberForm, value: string) {
@@ -268,6 +442,10 @@ export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFo
     setApiError(null);
   }
 
+  const handlePromoApplied = useCallback((result: PromoValidateResult | null) => {
+    setAppliedPromo(result);
+  }, []);
+
   async function handleSubmit() {
     if (!validateStep(step)) return;
     let refValid = true;
@@ -277,6 +455,12 @@ export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFo
 
     setIsLoading(true);
     setApiError(null);
+
+    // Lấy promoCode nếu đã apply thành công
+    const promoCode = appliedPromo?.valid
+      ? (document.getElementById('promo-code-input') as HTMLInputElement | null)?.value?.trim()?.toUpperCase() || undefined
+      : undefined;
+
     try {
       let message: string;
       if (totalSteps === 1) {
@@ -284,7 +468,8 @@ export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFo
         const result = await createRegistration({
           courseId, fullName: m.fullName, phone: m.phone, email: m.email,
           company: m.company || undefined, position: m.position || undefined,
-          referral, plan: 'individual',
+          referral, plan: selectedPlan.key === 'early_bird' ? 'individual' : 'individual',
+          promoCode,
         });
         message = result.message;
       } else {
@@ -294,6 +479,7 @@ export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFo
             fullName: m.fullName, phone: m.phone, email: m.email,
             company: m.company || undefined, position: m.position || undefined,
           })),
+          promoCode,
         });
         message = result.message;
       }
@@ -356,33 +542,54 @@ export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFo
           />
         </div>
 
-        {/* ── Referral (last step) ── */}
+        {/* ── Referral + Promo (last step) ── */}
         {isLastStep && (
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="referral" className="text-xs font-medium text-slate-300">
-              Bạn biết đến từ đâu <span className="text-red-400">*</span>
-            </label>
-            <div className="relative">
-              <select id="referral" value={referral}
-                onChange={(e) => { setReferral(e.target.value); setReferralError(undefined); }}
-                style={{ color: referral === '' ? 'rgb(100,116,139)' : '#ffffff' }}
-                className={`w-full appearance-none px-4 py-2.5 pr-10 border rounded-lg text-sm bg-slate-700/60 focus:outline-none focus:ring-2 focus:ring-sky-500/60 transition-colors ${
-                  referralError ? 'border-red-400/60' : 'border-white/15 hover:border-white/25'
-                } ${referral === '' ? 'text-slate-500' : 'text-white'}`}
-              >
-                <option value="" disabled className="bg-slate-800">Chọn nguồn...</option>
-                {REFERRAL_SOURCES.map((src) => (
-                  <option key={src} value={src} className="bg-slate-800">{src}</option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </span>
+          <>
+            {/* Referral */}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="referral" className="text-xs font-medium text-slate-300">
+                Bạn biết đến chương trình từ đâu <span className="text-red-400">*</span>
+              </label>
+              <div className="relative">
+                <select id="referral" value={referral}
+                  onChange={(e) => { setReferral(e.target.value); setReferralError(undefined); }}
+                  style={{ color: referral === '' ? 'rgb(100,116,139)' : '#ffffff' }}
+                  className={`w-full appearance-none px-4 py-2.5 pr-10 border rounded-lg text-sm bg-slate-700/60 focus:outline-none focus:ring-2 focus:ring-sky-500/60 transition-colors ${
+                    referralError ? 'border-red-400/60' : 'border-white/15 hover:border-white/25'
+                  } ${referral === '' ? 'text-slate-500' : 'text-white'}`}
+                >
+                  <option value="" disabled className="bg-slate-800">Chọn nguồn...</option>
+                  {REFERRAL_SOURCES.map((src) => (
+                    <option key={src} value={src} className="bg-slate-800">{src}</option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </div>
+              {referralError && <p className="text-xs text-red-400">{referralError}</p>}
             </div>
-            {referralError && <p className="text-xs text-red-400">{referralError}</p>}
-          </div>
+
+            {/* ── Promo Code ── */}
+            <div className="border-t border-white/8 pt-3">
+              <PromoCodeInput
+                courseId={courseId}
+                plan={selectedPlan.key}
+                basePrice={selectedPlan.basePrice}
+                onApplied={handlePromoApplied}
+              />
+            </div>
+          </>
+        )}
+
+        {/* ── Price Summary (last step) ── */}
+        {isLastStep && (
+          <PriceSummary
+            basePrice={selectedPlan.basePrice}
+            promo={appliedPromo}
+          />
         )}
 
         {/* ── API error ── */}
@@ -410,7 +617,14 @@ export function RegistrationForm({ courseId, price, priceGroup }: RegistrationFo
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>Đang xử lý...</>
-              ) : 'Đăng ký ngay →'}
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                  Gửi đăng ký
+                </>
+              )}
             </button>
             {isMulti && step > 0 && (
               <button onClick={() => { setStep((s) => s - 1); setApiError(null); }}
